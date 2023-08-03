@@ -1,0 +1,75 @@
+// If you want to override variables do it here
+@import "variables";
+
+$enable-ltr: true;
+$enable-rtl: true;
+
+// Import CoreUI for React components library
+@import "@coreui/coreui/scss/coreui";
+
+// Import Chart.js custom tooltips styles
+@import "@coreui/chartjs/scss/coreui-chartjs";
+
+@import "layout";
+@import "example";
+
+// If you want to add custom CSS you can put it here.
+@import "custom";
+
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    background-color: rgba(201, 196, 196, 0.301);
+}
+::-webkit-scrollbar-thumb{
+    background-color: rgb(255, 255, 255);
+}
+
+> :not(caption) > * > * {
+    padding: 1000px;
+  }
+
+.light-red{
+  background-color: rgb(187, 27, 27)
+}
+
+
+.active-light-red {
+  background-color: #ff0000; 
+}
+
+/* Warna kuning */
+.light-yellow {
+  background-color:  rgb(130, 130, 0);
+}
+
+/* Warna kuning terang saat aktif */
+.active-light-yellow {
+  background-color:  #ffff00;
+}
+
+/* Warna hijau */
+.light-green {
+  background-color:  green;
+}
+
+/* Warna hijau terang saat aktif */
+.active-light-green {
+  background-color:  #00ff00;
+}
+
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #07757C ;
+  }
+  .bg-default {
+    background-color: #07757C;
+  }
+
+  .sidebar {
+    --cui-sidebar-bg: #07757C;
+    --cui-sidebar-nav-group-bg: rgba(0, 0, 0, 0.082);
+    --cui-sidebar-brand-bg: #07757C;
+}
