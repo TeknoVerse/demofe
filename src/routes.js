@@ -1,5 +1,9 @@
 import React from 'react'
 import productionIsu from './views/modul/demo/production/production isu/ProductionIsu'
+import DisplayProduction from './views/modul/demo/warehouse/DisplayProduction'
+import QrCode from './views/modul/demo/kanban/QrCode'
+import MasterProduct from './views/modul/master data/product/MasterProduct'
+import MasterKanban from './views/modul/master data/kanban/MasterKanban'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 /* const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -98,6 +102,15 @@ const routes = [
   { path: '/widgets', name: 'Widgets', element: Widgets }, */
 
   { path: '/demo/production/production_isu', name: 'Production Isu', element: productionIsu },
+  { path: '/demo/warehouse/display_warehouse', name: 'Display Production', element: DisplayProduction },
+  { path: '/demo/kanban/qr_code', name: 'Qr Code', element: QrCode },
+
+
+  { path: '/master/product/master_product', name: 'Product', element: MasterProduct },
+  { path: '/master/product/master_kanban', name: 'Kanban', element: MasterKanban },
+  { path: '/master/product/master_slok', name: 'Slok', element: MasterProduct },
+
+
 
 ]
 

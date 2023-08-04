@@ -226,7 +226,7 @@ const ProductionIsu = () => {
             <div className='col-12'>
               <div className="form-check form-switch">
                 <input disabled={loading}  onChange={ handleMachine } className="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked={machine.status === "on"} />
-                <label className="form-check-label" > {machine.status && machine.status === "on" ? "Mesin On" : "Mesin Off"  } </label>
+                <label className="form-check-label" > {machine.status && machine.status === "on" ? "Mesin On" : "Mesin Off"  } /</label> 
               </div>
             </div>
             <div className='col-12 mt-2 d-flex justify-content-center '><Lampu_andon  red={lightRed.status} yellow={lightYellow.status} green={lightGreen.status} /></div>
@@ -247,7 +247,7 @@ const ProductionIsu = () => {
                 <div>Planning : {planning} </div>        
                 <div>Actual :  {actual} </div>
                 <div>Balance : {planning - actual}   </div>
-                <div>Performance : {(actual/planning)*100}% </div>
+                <div>Performance : {(actual/planning)*100}%hbghjkl;vb nm </div>
             </div>
           </div>
 

@@ -11,6 +11,7 @@ import {
   cilNotes,
   cilPencil, */
   cilPuzzle,
+  cilQrCode,
   cilSpeedometer,
  /*  cilStar, */
   cilUser,
@@ -40,9 +41,19 @@ const _nav = [
 
       {
         component: CNavItem,
-        name: '...',
-        to: '/master/',
-      }
+        name: 'Product',
+        to: '/master/product/master_product',
+      },
+      {
+        component: CNavItem,
+        name: 'Kanban',
+        to: '/master/product/master_kanban',
+      },
+      {
+        component: CNavItem,
+        name: 'Slok',
+        to: '/master/product/master_slok',
+      },
     ]
   },
   {
@@ -67,9 +78,26 @@ const _nav = [
         ]
       },
       {
-        component: CNavItem,
+        component: CNavGroup,
         name: 'Warehouse',
-        to: '/wwa',
+        items : [
+          {
+            component: CNavItem,
+            name: 'Display Warehouse',
+            to: '/demo/warehouse/display_warehouse',
+          },
+        ]
+      },
+      {
+        component: CNavGroup,
+        name: 'Kanban',
+        items : [
+          {
+            component: CNavItem,
+            name: 'Qr Code',
+            to: '/demo/kanban/qr_code',
+          },
+        ]
       },
       {
         component: CNavItem,
