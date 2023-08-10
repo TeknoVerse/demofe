@@ -42,18 +42,24 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Product',
-        to: '/master/product/master_product',
-      },
-      {
-        component: CNavItem,
-        name: 'Kanban',
-        to: '/master/product/master_kanban',
+        to: '/master/master_product',
       },
       {
         component: CNavItem,
         name: 'Slok',
-        to: '/master/product/master_slok',
+        to: '/master/master_slok',
       },
+      {
+        component: CNavItem,
+        name: 'Warehoouse',
+        to: '/master/warehouse',
+      },
+      {
+        component: CNavItem,
+        name: 'Kanban',
+        to: '/master/master_kanban',
+      },
+    
     ]
   },
   {
@@ -88,7 +94,7 @@ const _nav = [
           },
         ]
       },
-      {
+     /*  {
         component: CNavGroup,
         name: 'Kanban',
         items : [
@@ -98,7 +104,7 @@ const _nav = [
             to: '/demo/kanban/qr_code',
           },
         ]
-      },
+      }, */
       {
         component: CNavItem,
         name: 'Delivery',

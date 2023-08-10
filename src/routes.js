@@ -4,6 +4,8 @@ import DisplayProduction from './views/modul/demo/warehouse/DisplayProduction'
 import QrCode from './views/modul/demo/kanban/QrCode'
 import MasterProduct from './views/modul/master data/product/MasterProduct'
 import MasterKanban from './views/modul/master data/kanban/MasterKanban'
+import MasterSlok from './views/modul/master data/slok/MasterSlok'
+import MasterWarehouse from './views/modul/master data/warehouse/MasterWarehouse'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 /* const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -106,9 +108,10 @@ const routes = [
   { path: '/demo/kanban/qr_code', name: 'Qr Code', element: QrCode },
 
 
-  { path: '/master/product/master_product', name: 'Product', element: MasterProduct },
-  { path: '/master/product/master_kanban', name: 'Kanban', element: MasterKanban },
-  { path: '/master/product/master_slok', name: 'Slok', element: MasterProduct },
+  { path: '/master/master_product', name: 'Product', element: MasterProduct },
+  { path: '/master/master_kanban', name: 'Kanban', element: MasterKanban },
+  { path: '/master/master_slok', name: 'Slok', element: MasterSlok },
+  { path: '/master/warehouse', name: 'Warehouse', element: MasterWarehouse },
 
 
 
