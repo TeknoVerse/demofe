@@ -1,3 +1,5 @@
+import { cilPencil, cilTrash } from '@coreui/icons';
+import CIcon from '@coreui/icons-react';
 import axios from 'axios';
 import React, { useState } from 'react';
 import { getUrlWarehouse } from 'src/config/Api';
@@ -28,6 +30,9 @@ const MasterWarehouse = () => {
   const addProduct = async (e) => {
     e.preventDefault()
     try {
+      setFromAddProduct(false)
+      setSelectProduct([])
+      setQtyProduct('')
       await axios.post(getUrlWarehouse, {
         sloc_name : getWareHouseById.name ,
         sloc_code : getWareHouseById.code ,
@@ -35,9 +40,21 @@ const MasterWarehouse = () => {
         part_code : selectProduct.part_no,
         qty : qtyProduct
       })
+     
     } catch (error) {
       console.log(error)
     }
+  }
+
+  const handleDeleteItemWarehouse = async (id) => {
+    try {
+      await axios.delete(`${getUrlWarehouse}?id=${id}`)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  const handeItemWarehouseById = (item) => {
+
   }
 
   return (
@@ -180,8 +197,42 @@ const MasterWarehouse = () => {
                       <div className='col-12 text-center'>
                           <span className='fw-bold fs-5'>Product In Warehouse</span>
                       </div>
-                      <div className='col-12'>
-
+                      <div className='col-12 mt-2'>
+                      <table className="table text-center table-sm align-middle" >
+                            <thead>
+                              <tr>
+                                <th scope="col">No</th>
+                                <th scope="col">Part Name</th>
+                                <th scope="col">Part No</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">Option</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {Werhaouses.filter(warehouse => 
+                                warehouse.sloc_code.toLowerCase().includes(getWareHouseById.code)
+                              ).map((warehouse_item,index) => 
+                                <tr key={index}>
+                                  <td>{index +1} </td>
+                                  <td>{warehouse_item.part_name} </td>
+                                  <td>{warehouse_item.part_code} </td>
+                                  <td>{warehouse_item.qty} </td>
+                                  <td style={{ width: '150px' }}>
+                                    <span onClick={() => handleDeleteItemWarehouse(warehouse_item.id)} className="btn btn-danger text-white">
+                                      
+                                      <CIcon icon={cilTrash} />
+                                    </span>
+                                  {/*   <span onClick={() => handeItemWarehouseById(warehouse_item)} className="btn btn-success text-white ms-3">
+                                      
+                                      <CIcon icon={cilPencil} />
+                                    </span> */}
+                                  </td>
+                                </tr>
+                              )
+                              }
+                              
+                            </tbody>
+                          </table>
                       </div>
                   </div>
               </div>

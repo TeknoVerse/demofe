@@ -1,44 +1,42 @@
 import React, { useRef, useState } from 'react';
-import QRCode from 'qrcode.react';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import { Typeahead } from 'react-bootstrap-typeahead';
-import { DataKanban, DataProduct, DataSloc, DataWarehouse } from 'src/config/GetDataApi';
-import { cilFilter, cilPencil, cilTrash } from '@coreui/icons';
+import {
+  DataKanban,
+  DataProduct,
+  DataSloc,
+  DataWarehouse,
+} from 'src/config/GetDataApi';
+import { cilCheck, cilFilter, cilPencil, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import { getUrlKanban, getUrlSloc } from 'src/config/Api';
 import axios from 'axios';
+import ReactToPrint from 'react-to-print';
 
 const MasterKanban = () => {
   const products = DataProduct();
   const slocs = DataSloc();
-  const warehouses = DataWarehouse()
-  const kanbans = DataKanban()
+  const warehouses = DataWarehouse();
+  const kanbans = DataKanban();
 
   const [qrValue, setQRValue] = useState('');
   const [dataQrCode, setDataQrCode] = useState([]);
-  const [profuctFiltered, setProductFiltered] = useState([])
+  const [profuctFiltered, setProductFiltered] = useState([]);
 
   const [editQrCode, setEditQrCode] = useState(false);
   const [dataFormQrCode, setDataFromQrCode] = useState([]);
   const [search, setSearch] = useState('');
 
   const pdf = new jsPDF();
-  const qrCodeRef = useRef(null);
   const refPartCode = useRef(null);
 
-  const refForm = useRef(null)
-  const refTo = useRef(null)
+  const refForm = useRef(null);
+  const refTo = useRef(null);
 
   const handleCreateQrCode = async (e) => {
     e.preventDefault();
     try {
-      const qrValue = `${dataQrCode.part_name && dataQrCode.part_name}|${
-        dataQrCode.part_no && dataQrCode.part_no
-      }|${dataQrCode.qty && dataQrCode.qty}|${
-        dataQrCode.from && dataQrCode.from
-      }|${dataQrCode.to && dataQrCode.to}`;
-
       const response = await axios.post(getUrlKanban, {
         part_name: dataQrCode.part_name,
         part_code: dataQrCode.part_code,
@@ -51,7 +49,7 @@ const MasterKanban = () => {
       refTo.current.clear();
       setDataQrCode([]);
       setQRValue('');
-      refForm.current.clear(); 
+      refForm.current.clear();
     } catch (error) {
       console.log(error);
     }
@@ -60,9 +58,9 @@ const MasterKanban = () => {
   const handleClearFromQrCode = () => {
     refPartCode.current.clear();
     refTo.current.clear();
-     setDataQrCode([]);
+    setDataQrCode([]);
     setQRValue('');
-    refForm.current.clear(); 
+    refForm.current.clear();
   };
 
   const handQrCodeById = async (item) => {
@@ -87,33 +85,101 @@ const MasterKanban = () => {
     }
   };
 
-  
-  const [cekForm, setCekForm] = useState(false)
+  const [cekForm, setCekForm] = useState(false);
   const handleFilterProduct = (e) => {
-    if(cekForm ){
+    if (cekForm) {
       refPartCode.current.clear();
-    refTo.current.clear();
-     setDataQrCode([]);
-    setQRValue('');
-      setCekForm(false)
-    }else{
-      const cekExitProduct = products.filter(product =>
-        warehouses.filter(warehouse => warehouse.sloc_code.includes(e))
-                  .map(filteredWarehouse => filteredWarehouse.part_code)
-                  .some(result => String(result.part_code).includes(String(product.no)))
-      );
-      setCekForm(true)
-         setProductFiltered(cekExitProduct)
-        }
-    }
-  
+      refTo.current.clear();
+      setDataQrCode([]);
+      setQRValue('');
+      setCekForm(false);
+    } else {
+     /*  const cekExitProduct = products.filter((product) =>
+        warehouses
+          .filter((warehouse) => warehouse.sloc_code.includes(e))
+          .map((filteredWarehouse) => filteredWarehouse.part_code)
+          .some((result) =>
+            String(result.part_code).includes(String(product.no)),
+          ),
+      ); */
 
+      const getProductInWarehouse = warehouses.filter(warehouse => 
+         warehouse.sloc_code.toLowerCase().includes(e.toLowerCase()) )
+      setCekForm(true);
+      setProductFiltered(getProductInWarehouse);
+    }
+  };
+
+  const [kanbanById, setKanbanById] = useState([]);
+  const handlePreviewKanban = (item) => {
+    setQRValue(
+      `${item.part_name}|${item.part_code}|${item.qty}|${item.from}|${item.to}`,
+    );
+    setKanbanById(item);
+  };
+
+  const handleClosePreviewKanban = () => {
+    setQRValue([]);
+    setKanbanById([]);
+  };
+
+
+  const kanbanRef = useRef();
+  const qrCodeRef = useRef();
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '', 'width=420,height=297'); // A5 landscape size
+    const printDocument = printWindow.document;
+    printDocument.open();
+    printDocument.write(`
+      <html>
+        <head>
+          <style>
+            /* Add your print-specific styles here */
+            body {
+              margin: 0;
+              padding: 0;
+              background-color: #fff;
+            }
+            .print-section {
+              display: flex;
+              width : 400px;
+              border: 2px solid #000;
+              
+              align-items: center;
+              justify-content: space-between; 
+            }
+          
+            .item ul {
+              list-style-type: none;
+            }
+            .qr-code{
+              border: 2px solid #000;
+            }
+            /* Add more print styles as needed */
+          </style>
+        </head>
+        <body>
+          <div class="print-section">
+            
+            <div class="item"> 
+              ${kanbanRef.current.outerHTML}
+            </div>
+              
+              ${ qrCodeRef.current.outerHTML}
+           
+          </div>
+        </body>
+      </html>
+    `);
+    printDocument.close();
+    printWindow.print();
+  };
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid"  style={{}}>
       <div className="row g-3">
         <div className=" col-12 ">
-         
           <form onSubmit={handleCreateQrCode} className="row g-1">
             <div className="col-12">
               <div className="row ">
@@ -131,13 +197,17 @@ const MasterKanban = () => {
                       labelKey={'code'}
                       className="form-control border-0 form-control-sm p-0 "
                       placeholder="Sloc Code"
-                      onChange={(e) => handleFilterProduct(e[0] && e[0].code ? e[0].code : '') & setDataQrCode((prevData) => {
-                        return {
-                          ...prevData,
-                          from: e[0] && e[0].code ? e[0].code : '',
-                        };
-                      })
-                   }
+                      onChange={(e) =>
+                        handleFilterProduct(
+                          e[0] && e[0].code ? e[0].code : '',
+                        ) &
+                        setDataQrCode((prevData) => {
+                          return {
+                            ...prevData,
+                            from: e[0] && e[0].code ? e[0].code : '',
+                          };
+                        })
+                      }
                     />
                     <input
                       value={
@@ -164,14 +234,14 @@ const MasterKanban = () => {
                   htmlFor=""
                   className="col-sm-4 col-form-label col-form-label-sm"
                 >
-                  Part Code 
+                  Part Code
                 </label>
                 <div className="col-sm-8">
                   <Typeahead
                     options={profuctFiltered}
                     ref={refPartCode}
-                    labelKey={'part_no'}
-                    disabled={!dataQrCode.from }
+                    labelKey={'part_code'}
+                    disabled={!dataQrCode.from}
                     className="form-control border-0 form-control-sm p-0 "
                     placeholder="Part Code"
                     required
@@ -179,13 +249,13 @@ const MasterKanban = () => {
                       setDataQrCode((prevData) => {
                         return {
                           ...prevData,
-                          part_code: e[0] && e[0].part_no ? e[0].part_no : '',
+                          part_code: e[0] && e[0].part_code ? e[0].part_code : '',
                           part_name:
-                            e[0] && e[0].part_no
+                            e[0] && e[0].part_code
                               ? products.find(
                                   (item) =>
                                     parseInt(item.part_no) ===
-                                    parseInt(e[0].part_no),
+                                    parseInt(e[0].part_code),
                                 )?.part_name
                               : '',
                         };
@@ -205,7 +275,7 @@ const MasterKanban = () => {
                 </label>
                 <div className="col-sm-8">
                   <input
-                    value={dataQrCode.part_name ? dataQrCode.part_name :''}
+                    value={dataQrCode.part_name ? dataQrCode.part_name : ''}
                     onChange={(e) =>
                       setDataQrCode((prevData) => {
                         return { ...prevData, part_name: e.target.value };
@@ -231,7 +301,7 @@ const MasterKanban = () => {
                   <div className="d-flex flex-column">
                     <div className="col-12 mb-2">
                       <span className=" fs-6">
-                        Qty Available :{' '}
+                        Qty Available :
                         <span
                           className={`badge ${
                             !dataQrCode.part_code
@@ -240,9 +310,9 @@ const MasterKanban = () => {
                           }  `}
                         >
                           {dataQrCode.part_code
-                            ? products.find(
-                                (item) =>
-                                  parseInt(item.part_no) ===
+                            ? warehouses.find(
+                                (warehouse) =>
+                                  parseInt(warehouse.part_code) ===
                                   parseInt(dataQrCode.part_code),
                               )?.qty
                             : '0'}
@@ -261,11 +331,11 @@ const MasterKanban = () => {
                       type="number"
                       max={
                         dataQrCode.part_code
-                          ? products.find(
-                              (item) =>
-                                String(item.part_no) ===
-                                String(dataQrCode.part_code),
-                            )?.qty
+                          ? warehouses.find(
+                            (warehouse) =>
+                              parseInt(warehouse.part_code) ===
+                              parseInt(dataQrCode.part_code),
+                          )?.qty
                           : '0'
                       }
                       className="form-control form-control-sm"
@@ -293,8 +363,7 @@ const MasterKanban = () => {
                       className="form-control border-0 form-control-sm p-0 "
                       placeholder="Sloc Code"
                       ref={refTo}
-                    disabled={!dataQrCode.from }
-
+                      disabled={!dataQrCode.from}
                       onChange={(e) =>
                         setDataQrCode((prevData) => {
                           return {
@@ -339,7 +408,6 @@ const MasterKanban = () => {
                     !dataQrCode.qty ||
                     !dataQrCode.to ||
                     !dataQrCode.from
-
                   }
                   className="btn col-sm-4 btn-success text-white btn-sm"
                 >
@@ -349,24 +417,6 @@ const MasterKanban = () => {
             </div>
           </form>
         </div>
-
-        {/*  <div className="col-5 row justify-content-center  ">
-          <div className="col-12 text-center mb-3">
-            <span className="fw-bold fs-4">Render Kanban</span>
-          </div>
-          <div className="border border-5 border-dark   col-7  h-75 ">
-            {qrValue && (
-              <QRCodeCanvas
-                value={qrValue}
-                ref={qrCodeRef}
-                className="h-100 w-100 py-2"
-              />
-            )}
-          </div>
-          <div className='col-12 mt-2 d-flex flex-column justify-content-evenly'>
-                <span className='btn btn-success btn-sm text-white'>Print Kanban </span>
-            </div>
-        </div> */}
 
         <div className="col-12">
           <hr />
@@ -406,34 +456,104 @@ const MasterKanban = () => {
                 </tr>
               </thead>
               <tbody>
-                {
-                  kanbans.map((item,index) => 
-                    <tr key={index}>
-                      <td>{index+1}</td>
-                      <td>{item.part_name} </td>
-                      <td>{item.part_code} </td>
-                      <td>{item.qty} </td>
-                      <td>{item.from} </td>
-                      <td>{item.to} </td>
-                      
-                      <td style={{ width: '150px' }}>
-                        <span
-                          /* onClick={() => handleDeleteSloc(item.id)} */ className="btn btn-danger text-white"
-                        >
-                          <CIcon icon={cilTrash} />
-                        </span>
-                        <span
-                          /* onClick={() => handQrCodeById(item)} */ className="btn btn-success text-white ms-3"
-                        >
-                          <CIcon icon={cilPencil} />
-                        </span>
-                      </td>
-                    </tr>
-                    )
-                }
-              
+                {kanbans.map((item, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{item.part_name} </td>
+                    <td>{item.part_code} </td>
+                    <td>{item.qty} </td>
+                    <td>{item.from} </td>
+                    <td>{item.to} </td>
+
+                    <td style={{ width: '150px' }}>
+                      <span
+                        /* onClick={() => handleDeleteSloc(item.id)} */ className="btn btn-danger text-white"
+                      >
+                        <CIcon icon={cilTrash} />
+                      </span>
+                      <span
+                        data-bs-toggle="modal"
+                        data-bs-target="#detailKanban"
+                        onClick={() => handlePreviewKanban(item)}
+                        className="btn btn-success text-white ms-3"
+                      >
+                        <CIcon icon={cilCheck} />
+                      </span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="modal fade"
+        id="detailKanban"
+        tabIndex="-1"
+        aria-labelledby="detailKanbanLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-xl modal-dialog-scrollable">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="detailKanbanLabel">
+                Preview Kanban
+              </h1>
+            </div>
+            <div className="modal-body">
+              <div className="row">
+                {/* start kanban */}
+                <div className="col-5" >
+                  <div className="d-flex  border border-3 p-2 ">
+                    <div className="text-start col-6 justify-content-evenly" ref={kanbanRef}>
+                      <ul className='text-decoration-none'>
+                        <li>Part No : {kanbanById.part_code} </li>
+                        <li>Part Name : {kanbanById.part_name} </li>
+                        <li>Qty : {kanbanById.qty} </li>
+                        <li>From : {kanbanById.from} </li>
+                        <li>To : {kanbanById.to} </li>
+                      </ul>
+                    </div>
+                    <div
+                      className="border border-dark border-5  col-6 "
+                      style={{ height: '150px', width: '150px', margin :'0px', padding : '10px',  }}
+                      ref={qrCodeRef}
+
+                     
+                    >
+                      {qrValue && (
+                        <QRCodeSVG
+                          value={qrValue}
+                          style={{width : '100%', height : '100%', padding : "0px", margin : '0px'}}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+                {/* end kanban */}
+
+                {/* start button print kanban */}
+                <div className='col-4'>
+                    <div className='d-flex'>
+                        <button onClick={handlePrint} className='btn btn-success text-white'>Print Kanban</button>
+                    </div>
+          
+                </div>
+                {/* end button print kanban */}
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-danger text-white"
+                data-bs-dismiss="modal"
+                onClick={handleClosePreviewKanban}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
