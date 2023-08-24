@@ -49,11 +49,24 @@ const _nav = [
         name: 'Slok',
         to: '/master/master_slok',
       },
+    
+
       {
-        component: CNavItem,
-        name: 'Warehoouse',
-        to: '/master/warehouse',
-      },
+        component: CNavGroup,
+        name: 'Warehouse',
+        items: [
+          {
+            component: CNavItem,
+            name: 'Production',
+            to: '/master/warehouse/production'
+            },
+          {
+            component: CNavItem,
+            name: 'Delivery',
+            to: '/master/warehouse/delivery'
+            }
+        ]
+        },
       {
         component: CNavItem,
         name: 'Kanban',
@@ -74,26 +87,26 @@ const _nav = [
           {
             component: CNavItem,
             name: 'Production Isu',
-            to: '/demo/production/production_isu',
+            to: '/transaction/production/production_isu',
           },
           {
             component: CNavItem,
             name: 'Display Production',
-            to: '/demo/production/display_production',
+            to: '/transaction/production/display_production',
           },
         ]
       },
-      {
+    /*   {
         component: CNavGroup,
         name: 'Warehouse',
         items : [
           {
             component: CNavItem,
             name: 'Display Warehouse',
-            to: '/demo/warehouse/display_warehouse',
+            to: '/transaction/warehouse/display_warehouse',
           },
         ]
-      },
+      }, */
      /*  {
         component: CNavGroup,
         name: 'Kanban',
@@ -101,14 +114,14 @@ const _nav = [
           {
             component: CNavItem,
             name: 'Qr Code',
-            to: '/demo/kanban/qr_code',
+            to: '/transaction/kanban/qr_code',
           },
         ]
       }, */
       {
         component: CNavItem,
-        name: 'Delivery',
-        to: '/demo/',
+        name: 'Delivery Note',
+        to: '/transaction/deliveryNote',
       },
       
     ]
@@ -126,12 +139,12 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Manage Account',
-        to: '/demo/',
+        to: '/transaction/',
       },
       {
         component: CNavItem,
         name: 'Page Access',
-        to: '/demo/',
+        to: '/transaction/',
       }
    
       

@@ -36,7 +36,7 @@ const AppSidebar = () => {
       </CSidebarBrand>
       <CSidebarNav>
         <SimpleBar>
-          <AppSidebarNav items={navigation} />
+          <AppSidebarNav className="bg-danger" items={navigation}  />
         </SimpleBar>
       </CSidebarNav>
       <CSidebarToggler

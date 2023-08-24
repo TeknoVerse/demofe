@@ -5,7 +5,9 @@ import QrCode from './views/modul/demo/kanban/QrCode'
 import MasterProduct from './views/modul/master data/product/MasterProduct'
 import MasterKanban from './views/modul/master data/kanban/MasterKanban'
 import MasterSlok from './views/modul/master data/slok/MasterSlok'
-import MasterWarehouse from './views/modul/master data/warehouse/MasterWarehouse'
+import DeliveryNote from './views/modul/demo/delivery note/DeliveryNote'
+import MasterWarehouseProduction from './views/modul/master data/warehouse/MasterWarehouseProduction'
+import MasterWarehouseDelivery from './views/modul/master data/warehouse/MasterWarehouseDelivery'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 /* const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -103,15 +105,17 @@ const routes = [
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets }, */
 
-  { path: '/demo/production/production_isu', name: 'Production Isu', element: productionIsu },
-  { path: '/demo/warehouse/display_warehouse', name: 'Display Production', element: DisplayProduction },
-  { path: '/demo/kanban/qr_code', name: 'Qr Code', element: QrCode },
+  { path: '/transaction/production/production_isu', name: 'Production Isu', element: productionIsu },
+  { path: '/transaction/warehouse/display_warehouse', name: 'Display Production', element: DisplayProduction },
+  { path: '/transaction/kanban/qr_code', name: 'Qr Code', element: QrCode },
+  { path: '/transaction/deliveryNote', name: 'Delivery Note', element: DeliveryNote  },
 
 
   { path: '/master/master_product', name: 'Product', element: MasterProduct },
   { path: '/master/master_kanban', name: 'Kanban', element: MasterKanban },
   { path: '/master/master_slok', name: 'Slok', element: MasterSlok },
-  { path: '/master/warehouse', name: 'Warehouse', element: MasterWarehouse },
+  { path: '/master/warehouse/production', name: 'Warehouse', element: MasterWarehouseProduction },
+  { path: '/master/warehouse/delivery', name: 'Delivery', element: MasterWarehouseDelivery },
 
 
 

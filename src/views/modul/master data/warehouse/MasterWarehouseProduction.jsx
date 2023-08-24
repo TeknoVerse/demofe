@@ -1,17 +1,18 @@
 import { cilPencil, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { getUrlWarehouse } from 'src/config/Api';
 import { DataProduct, DataSloc, DataWarehouse } from 'src/config/GetDataApi';
 
-const MasterWarehouse = () => {
+const MasterWarehouseProduction = () => {
   const Slocs = DataSloc()
   const Products = DataProduct()
   const Werhaouses = DataWarehouse()
 
-  const [getWareHouseById, setWareHouseById] = useState([]) 
+  
 
+  const [getWareHouseById, setWareHouseById] = useState([]) 
   const [addFromProduct, setFromAddProduct] = useState(false)
   const [selectProduct, setSelectProduct] = useState([])
   const [qtyProduct, setQtyProduct] = useState('')
@@ -53,9 +54,7 @@ const MasterWarehouse = () => {
       console.log(error)
     }
   }
-  const handeItemWarehouseById = (item) => {
-
-  }
+  
 
   return (
     <div className="container-fluid">
@@ -193,7 +192,7 @@ const MasterWarehouse = () => {
                   <div className="col-1  d-flex ">
                     <div className="bg-dark h-100 m-auto" style={{ width: '1px' }}></div>
                   </div>
-                  <div className='col-5'>
+                  <div className='col-5' >
                       <div className='col-12 text-center'>
                           <span className='fw-bold fs-5'>Product In Warehouse</span>
                       </div>
@@ -249,4 +248,4 @@ const MasterWarehouse = () => {
   );
 };
 
-export default MasterWarehouse;
+export default MasterWarehouseProduction;

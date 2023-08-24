@@ -36,6 +36,7 @@
     "classnames": "^2.3.2",
     "core-js": "^3.31.0",
     "jspdf": "^2.5.1",
+    "multer": "^1.4.5-lts.1",
     "prop-types": "^15.8.1",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",

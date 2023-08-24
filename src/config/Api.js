@@ -7,3 +7,4 @@ export const getUrlProduct = hostanme+'/product';
 export const getUrlSloc = hostanme+'/sloc';
 export const getUrlKanban = hostanme+'/kanban';
 export const getUrlWarehouse = hostanme+'/warehouse';
+export const getUrlDn = hostanme+'/dn';

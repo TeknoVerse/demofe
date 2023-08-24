@@ -24,6 +24,7 @@ export const AppSidebarNav = ({ items }) => {
     const { component, name, badge, icon, ...rest } = item
     const Component = component
     return (
+      
       <Component
         {...(rest.to &&
           !rest.items && {
@@ -34,6 +35,7 @@ export const AppSidebarNav = ({ items }) => {
       >
         {navLink(name, icon, badge)}
       </Component>
+     
     )
   }
   const navGroup = (item, index) => {
@@ -41,15 +43,18 @@ export const AppSidebarNav = ({ items }) => {
     const Component = component
     return (
       <Component
+    
         idx={String(index)}
         key={index}
+        
         toggler={navLink(name, icon)}
         visible={location.pathname.startsWith(to)}
         {...rest}
       >
+
         {item.items?.map((item, index) =>
           item.items ? navGroup(item, index) : navItem(item, index),
-        )}
+          )}
       </Component>
     )
   }
@@ -57,7 +62,7 @@ export const AppSidebarNav = ({ items }) => {
   return (
     <React.Fragment>
       {items &&
-        items.map((item, index) => (item.items ? navGroup(item, index) : navItem(item, index)))}
+        items.map((item, index) =>   (item.items ?  navGroup(item, index) : navItem(item, index)))}
     </React.Fragment>
   )
 }
