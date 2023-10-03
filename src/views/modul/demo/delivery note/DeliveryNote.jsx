@@ -83,7 +83,7 @@ const DeliveryNote = () => {
        <form onSubmit={handleSubmit}  className='row g-2'>
         <span className='text-danger fw-bold'>Upload Data Delivery with file</span>
         <div className='col-3'>
-          <input type="file" className='form-control' onChange={(e) => setFile(e.target.files[0])} />
+          <input type="file" className='form-control' required onChange={(e) => setFile(e.target.files[0])} />
         </div>
         <button className='btn btn-success col-1 text-white' type="submit">Upload</button>
       </form>

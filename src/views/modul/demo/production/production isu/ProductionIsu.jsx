@@ -247,7 +247,7 @@ const ProductionIsu = () => {
                 <div>Planning : {planning} </div>        
                 <div>Actual :  {actual} </div>
                 <div>Balance : {planning - actual}   </div>
-                <div>Performance : {(actual/planning)*100}%hbghjkl;vb nm </div>
+                <div>Performance : {  (actual/planning)*100 } % </div>
             </div>
           </div>
 

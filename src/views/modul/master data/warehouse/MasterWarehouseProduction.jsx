@@ -209,7 +209,7 @@ const MasterWarehouseProduction = () => {
                             </thead>
                             <tbody>
                             {Werhaouses.filter(warehouse => 
-                                warehouse.sloc_code.toLowerCase().includes(getWareHouseById.code)
+                                warehouse.sloc_code.includes(getWareHouseById.code)
                               ).map((warehouse_item,index) => 
                                 <tr key={index}>
                                   <td>{index +1} </td>

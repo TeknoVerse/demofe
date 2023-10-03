@@ -149,7 +149,7 @@ const MasterSlok = () => {
                   type="submit"
                   className="btn col-sm-4 btn-success text-white btn-sm"
                 >
-                    {editSloc ? "Save Editing" : "Add Product"}
+                    {editSloc ? "Save Editing" : "Add Slock"}
                 </button>
               </div>
             </div>

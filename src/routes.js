@@ -8,6 +8,7 @@ import MasterSlok from './views/modul/master data/slok/MasterSlok'
 import DeliveryNote from './views/modul/demo/delivery note/DeliveryNote'
 import MasterWarehouseProduction from './views/modul/master data/warehouse/MasterWarehouseProduction'
 import MasterWarehouseDelivery from './views/modul/master data/warehouse/MasterWarehouseDelivery'
+import Production from './views/modul/demo/production/Production'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 /* const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -106,6 +107,7 @@ const routes = [
   { path: '/widgets', name: 'Widgets', element: Widgets }, */
 
   { path: '/transaction/production/production_isu', name: 'Production Isu', element: productionIsu },
+  { path: '/transaction/production/production', name: 'Production Isu', element: Production },
   { path: '/transaction/warehouse/display_warehouse', name: 'Display Production', element: DisplayProduction },
   { path: '/transaction/kanban/qr_code', name: 'Qr Code', element: QrCode },
   { path: '/transaction/deliveryNote', name: 'Delivery Note', element: DeliveryNote  },

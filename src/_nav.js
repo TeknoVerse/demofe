@@ -86,14 +86,15 @@ const _nav = [
         items : [
           {
             component: CNavItem,
-            name: 'Production Isu',
-            to: '/transaction/production/production_isu',
+            name: 'Production',
+            to: '/transaction/production/production',
           },
           {
             component: CNavItem,
-            name: 'Display Production',
-            to: '/transaction/production/display_production',
+            name: 'Production Isu',
+            to: '/transaction/production/production_isu',
           },
+     
         ]
       },
     /*   {
