@@ -61,7 +61,7 @@ const MasterProduct = () => {
         await axios.patch(`${getUrlProduct}?id=${dataFormProduct.id}`, {
           part_name : dataFormProduct.part_name,
           part_no : dataFormProduct.part_no,
-          qty : dataFormProduct.qty,
+          ct : dataFormProduct.ct,
         })
         setDataFromProduct([])
         setEditProduct(false)
@@ -69,7 +69,7 @@ const MasterProduct = () => {
         await axios.post(getUrlProduct, {
           part_name : dataFormProduct.part_name,
           part_no : dataFormProduct.part_no,
-          qty : dataFormProduct.qty,
+          ct : dataFormProduct.ct,
         })
         setDataFromProduct([])
       }
@@ -81,7 +81,7 @@ const MasterProduct = () => {
   const handeProductById = async (item) => {
     try {
       setEditProduct(true)
-      setDataFromProduct({part_no : item.part_no, part_name: item.part_name, qty : item.qty, id: item.id  })
+      setDataFromProduct({part_no : item.part_no, part_name: item.part_name, ct : item.ct, id: item.id  })
       
     } catch (error) {
       console.log(error)
@@ -149,19 +149,19 @@ const MasterProduct = () => {
                   htmlFor=""
                   className="col-sm-4 col-form-label col-form-label-sm"
                 >
-                  Qty
+                  CT (seccond)
                 </label>
                 <div className="col-sm-8">
                   <input
                     type="number"
                     required
-                    value={dataFormProduct.qty ? dataFormProduct.qty : ''}
+                    value={dataFormProduct.ct ? dataFormProduct.ct : ''}
 
-                    onChange={e => setDataFromProduct(prevData => {return {...prevData, qty : e.target.value }})}
+                    onChange={e => setDataFromProduct(prevData => {return {...prevData, ct : e.target.value }})}
 
                     className="form-control form-control-sm"
                     id=""
-                    placeholder="Qty"
+                    placeholder="CT"
                   />
                 </div>
               </div>
@@ -225,7 +225,7 @@ const MasterProduct = () => {
                   <th scope="col">No</th>
                   <th scope="col">Part Name</th>
                   <th scope="col">Part No</th>
-                  <th scope="col">qty</th>
+                  <th scope="col">Ct</th>
                   <th scope="col">Action</th>
                 </tr>
               </thead>
@@ -240,7 +240,7 @@ const MasterProduct = () => {
                     <th >{index +1} </th>
                     <td>{item.part_name}</td>
                     <td>{item.part_no}</td>
-                    <td>{item.qty}</td>
+                    <td>{item.ct}</td>
                     <td style={{ width: '150px' }}>
                       <span onClick={() => handleDeleteProduct(item.id)} className="btn btn-danger text-white">
                         

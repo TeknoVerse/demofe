@@ -1,13 +1,20 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { getUrlMachine, getUrlSubCategory, getUrlTtransStop } from 'src/config/Api';
+import { Typeahead } from 'react-bootstrap-typeahead';
+import {
+  getUrlMachine,
+  getUrlSubCategory,
+  getUrlTtransStop,
+} from 'src/config/Api';
+import { DataProduct } from 'src/config/GetDataApi';
 
 const DataProductionDisplay = () => {
+  const getDataProduct = DataProduct()
   const newDate = new Date();
   const currentTime = newDate.toLocaleString();
   const [currentDataMachine, setCurrentDataMachine] = useState([]);
-  const [dataSubCategoryPnm, setDataSubCategoryPnm] = useState([])
-  const [dataSubCategoryPm, setDataSubCategoryPm] = useState([])
+  const [dataSubCategoryPnm, setDataSubCategoryPnm] = useState([]);
+  const [dataSubCategoryPm, setDataSubCategoryPm] = useState([]);
 
   const [displayOptions, setDisplayOptions] = useState({
     machine_running: false,
@@ -21,8 +28,7 @@ const DataProductionDisplay = () => {
   });
 
   useEffect(() => {
-
-    const bagInterval = []
+    const bagInterval = [];
 
     const intervalDataMachine = setInterval(() => {
       getDataMachine();
@@ -31,28 +37,30 @@ const DataProductionDisplay = () => {
       getTmastSubCategory();
     }, 1000);
 
-    bagInterval.push(IntervalTmastSubCategory,intervalDataMachine)
+    bagInterval.push(IntervalTmastSubCategory, intervalDataMachine);
     return () => {
-      bagInterval.forEach(data => {
-        clearInterval(data)
+      bagInterval.forEach((data) => {
+        clearInterval(data);
       });
     };
   });
 
   const getTmastSubCategory = async () => {
     try {
-      const response = await axios.get(getUrlSubCategory)
-      const dataSub = response.data
-      const categoryPnm = dataSub.filter(itemSub =>  itemSub.category_code === 'PNM-01')
-      const categoryPm = dataSub.filter(itemSub =>  itemSub.category_code === 'PM-01')
-      setDataSubCategoryPnm(categoryPnm)
-      setDataSubCategoryPm(categoryPm)
+      const response = await axios.get(getUrlSubCategory);
+      const dataSub = response.data;
+      const categoryPnm = dataSub.filter(
+        (itemSub) => itemSub.category_code === 'PNM-01',
+      );
+      const categoryPm = dataSub.filter(
+        (itemSub) => itemSub.category_code === 'PM-01',
+      );
+      setDataSubCategoryPnm(categoryPnm);
+      setDataSubCategoryPm(categoryPm);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
-
-  
+  };
 
   const getDataMachine = async () => {
     try {
@@ -92,12 +100,11 @@ const DataProductionDisplay = () => {
       });
 
       await axios.post(getUrlTtransStop, {
-        time : currentTime,
-        machine_no : process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code : e.category_code,
-        sub_category_code : e.code 
-
-      }) 
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        category_code: e.category_code,
+        sub_category_code: e.code,
+      });
     }
   };
 
@@ -117,12 +124,11 @@ const DataProductionDisplay = () => {
       });
 
       await axios.post(getUrlTtransStop, {
-        time : currentTime,
-        machine_no : process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code : e.category_code,
-        sub_category_code : e.code 
-
-      }) 
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        category_code: e.category_code,
+        sub_category_code: e.code,
+      });
     }
   };
 
@@ -223,30 +229,28 @@ const DataProductionDisplay = () => {
               </button>
             </div>
 
-            {
-                                dataSubCategoryPnm.map((item,index) => (
-                                  <div
-                                  key={index}
-                                  className={` col-6  ${
-                                    formDandori.status === true && 'd-none'
-                                  } `}
-                                >
-                                  <button
-                                    disabled={
-                                      currentDataMachine.length === 0 ||
-                                      currentDataMachine === null ||
-                                      (currentDataMachine.category &&
-                                        currentDataMachine.category !== item.code )
-                                    }
-                                    onClick={() => handleProblemNonMachine(item)}
-                                    className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
-                                  >
-                                {item.name}
-                                  </button>
-                                </div>
-                                ))
-                              }
-      {/*       <div
+            {dataSubCategoryPnm.map((item, index) => (
+              <div
+                key={index}
+                className={` col-6  ${
+                  formDandori.status === true && 'd-none'
+                } `}
+              >
+                <button
+                  disabled={
+                    currentDataMachine.length === 0 ||
+                    currentDataMachine === null ||
+                    (currentDataMachine.category &&
+                      currentDataMachine.category !== item.code)
+                  }
+                  onClick={() => handleProblemNonMachine(item)}
+                  className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
+                >
+                  {item.name}
+                </button>
+              </div>
+            ))}
+            {/*       <div
               className={` col-6  ${formDandori.status === true && 'd-none'} `}
             >
               <button
@@ -332,82 +336,90 @@ const DataProductionDisplay = () => {
                     />
                   </div>
                 </div>
+               
                 <div className="row mb-3 justify-content-center">
-                  <label className="col-sm-3 col-form-label">Part No</label>
-                  <div className="col-sm-6">
-                    <input
-                      type="text"
-                      value={formDandori.part_no ? formDandori.part_no : ''}
-                      required
-                      onChange={(e) =>
-                        setFormDandori((prevData) => {
-                          return {
-                            ...prevData,
-                            part_no: e.target.value,
-                          };
-                        })
-                      }
-                      className="form-control form-control-sm"
-                    />
-                  </div>
-                </div>
-                <div className="row mb-3 justify-content-center">
-                  <label className="col-sm-3 col-form-label">Part Name</label>
-                  <div className="col-sm-6">
-                    <input
-                      type="text"
-                      value={formDandori.part_name ? formDandori.part_name : ''}
-                      required
-                      onChange={(e) =>
-                        setFormDandori((prevData) => {
-                          return {
-                            ...prevData,
-                            part_name: e.target.value,
-                          };
-                        })
-                      }
-                      className="form-control form-control-sm"
-                    />
-                  </div>
-                </div>
-                <div className="row mb-3 justify-content-center">
-                  <label className="col-sm-3 col-form-label"> QTY</label>
-                  <div className="col-sm-6">
-                    <input
-                      type="number"
-                      value={formDandori.qty ? formDandori.qty : ''}
-                      required
-                      onChange={(e) =>
-                        setFormDandori((prevData) => {
-                          return {
-                            ...prevData,
-                            qty: e.target.value,
-                          };
-                        })
-                      }
-                      className="form-control form-control-sm"
-                    />
-                  </div>
-                </div>
-                <div className="row mb-3 justify-content-center">
-                  <label className="col-sm-3 col-form-label">CT</label>
-                  <div className="col-sm-6">
-                    <input
-                      type="Number"
-                      value={formDandori.ct ? formDandori.ct : ''}
-                      required
-                      onChange={(e) =>
-                        setFormDandori((prevData) => {
-                          return {
-                            ...prevData,
-                            ct: e.target.value,
-                          };
-                        })
-                      }
-                      className="form-control form-control-sm"
-                    />
-                  </div>
-                </div>
+                                  <label className="col-sm-3 col-form-label">
+                                    Part No
+                                  </label>
+                                  <div className="col-sm-6">
+                                    <Typeahead
+                                    options={getDataProduct}
+                                    labelKey={"part_no"}
+                                    id={(e) => (e[0] != null && e[0].id != null ? e[0].id : null)}
+                                    onChange={(e) =>
+                                      setFormDandori((prevData) => {
+                                        return {
+                                          ...prevData,
+                                          part_no:  e[0] != null && e[0].part_no != null ? e[0].part_no : '',
+                                          part_name:  e[0] != null && e[0].part_name != null ? e[0].part_name : '',
+                                          ct:  e[0] != null && e[0].ct != null ? e[0].ct : '',
+                                        };
+                                      })
+                                    }
+                                    />
+                          
+                                  </div>
+                                </div>
+                                <div className="row mb-3 justify-content-center">
+                                  <label className="col-sm-3 col-form-label">
+                                    Part Name
+                                  </label>
+                                  <div className="col-sm-6">
+                                    <input
+                                      type="text"
+                                      value={
+                                        formDandori.part_name
+                                          ? formDandori.part_name
+                                          : ''
+                                      }
+                                      disabled
+                                 
+                                      className="form-control form-control-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="row mb-3 justify-content-center">
+                                  <label className="col-sm-3 col-form-label">
+                                    CT (Seccond)
+                                  </label>
+                                  <div className="col-sm-6">
+                                    <input
+                                      type="text"
+                                      value={
+                                        formDandori.ct
+                                          ? formDandori.ct
+                                          : ''
+                                      }
+                                      disabled
+                                 
+                                      className="form-control form-control-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="row mb-3 justify-content-center">
+                                  <label className="col-sm-3 col-form-label">
+                                    {' '}
+                                    QTY
+                                  </label>
+                                  <div className="col-sm-6">
+                                    <input
+                                      type="number"
+                                      value={
+                                        formDandori.qty ? formDandori.qty : ''
+                                      }
+                                      required
+                                      onChange={(e) =>
+                                        setFormDandori((prevData) => {
+                                          return {
+                                            ...prevData,
+                                            qty: e.target.value,
+                                          };
+                                        })
+                                      }
+                                      className="form-control form-control-sm"
+                                    />
+                                  </div>
+                                </div>
                 <div className="text-center">
                   <button
                     type="submit"
@@ -427,32 +439,28 @@ const DataProductionDisplay = () => {
                 : ''
             } row text-white p-0 g-2`}
           >
-                {
-                                dataSubCategoryPm.map((item,index) => (
-                                  <div
-                                  key={index}
-                                  className={` col-6  ${
-                                    formDandori.status === true && 'd-none'
-                                  } `}
-                                >
-                                  <button
-                               
-                                    disabled={
-                                      currentDataMachine.length === 0 ||
-                                      currentDataMachine === null ||
-                                      (currentDataMachine.category &&
-                                        currentDataMachine.category !== item.code)
-                                    }
-                                    onClick={() => handleProblemMachine(item)}
-                                    className=" col-md-12 btn  btn-danger text-white p-3 align-items-center justify-content-center d-flex"
-                                  >
-                                {item.name}
-                                  </button>
-                                </div>
-                                ))
-                              }
-     <div
-            
+            {dataSubCategoryPm.map((item, index) => (
+              <div
+                key={index}
+                className={` col-6  ${
+                  formDandori.status === true && 'd-none'
+                } `}
+              >
+                <button
+                  disabled={
+                    currentDataMachine.length === 0 ||
+                    currentDataMachine === null ||
+                    (currentDataMachine.category &&
+                      currentDataMachine.category !== item.code)
+                  }
+                  onClick={() => handleProblemMachine(item)}
+                  className=" col-md-12 btn  btn-danger text-white p-3 align-items-center justify-content-center d-flex"
+                >
+                  {item.name}
+                </button>
+              </div>
+            ))}
+            <div
               className={` mt-4 col-12 ${
                 formDandori.status === false && 'd-none'
               } `}

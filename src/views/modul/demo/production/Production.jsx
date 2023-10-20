@@ -1,6 +1,7 @@
 import { CCard } from '@coreui/react';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { Typeahead } from 'react-bootstrap-typeahead';
 
 import { Lampu_andon } from 'src/components/my component/MyIcon';
 import {
@@ -11,10 +12,12 @@ import {
   getUrlTtransStop,
   getUrlTworkDisplay,
 } from 'src/config/Api';
+import { DataProduct } from 'src/config/GetDataApi';
 
 const Production = () => {
   const newDate = new Date();
   const currentTime = newDate.toLocaleString();
+  const getDataProduct = DataProduct() 
 
 
   const defaultMachineCode = 'MT-01';
@@ -52,11 +55,13 @@ const Production = () => {
   const handleDataOutput = async (e) => {
     e.preventDefault();
     await axios.post(getUrlTtransOutput, {
-      machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+      machine_no: currentDataMachine.code,
       qty: 1,
+      current_time : currentTime ,
       part_no: currentDataMachine.part_no,
     });
   };
+
 
   useEffect(() => {
     setTimeout(() => {
@@ -72,13 +77,10 @@ const Production = () => {
     const IntervalTtransOperation = setInterval(() => {
       getDataTtrasOperation();
     }, 1000);
-    const IntervalTtransOutput = setInterval(() => {
-      getTtransOutput();
+    const IntervalDisplayProduction = setInterval(() => {
+      handleDisplayProduction();
     }, 1000);
-    const IntervalTworkDisplay = setInterval(() => {
-      getTworkDisplay();
-    }, 1000);
-  
+   
     const IntervalTmastSubCategory = setInterval(() => {
       getTmastSubCategory()
     }, 1000);
@@ -86,8 +88,7 @@ const Production = () => {
     bagInterval.push(
       intervalDataMachine,
       IntervalTtransOperation,
-      IntervalTtransOutput,
-      IntervalTworkDisplay,
+      IntervalDisplayProduction,
       IntervalTmastSubCategory,
     );
 
@@ -96,15 +97,11 @@ const Production = () => {
         clearInterval(data);
       });
     };
-  });
+  },[dataMachine, checked,machine,dataSubCategoryPm,dataSubCategoryPnm]);
 
   const getTworkDisplay = async () => {
     try {
-      const response = await axios.get(
-        `${getUrlTworkDisplay}?machine_no=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`,
-      );
-      const getData = response.data;
-      setDataPlanning(getData.ctime);
+ 
     } catch (error) {
       console.log(error);
     }
@@ -335,18 +332,28 @@ const Production = () => {
     }
   };
 
-  const getTtransOutput = async () => {
-    try {
-      const response = await axios.get(
-        `${getUrlTtransOutput}?machine_no=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`,
-      );
-      setActual(
-        response.data.reduce((totalQty, data) => totalQty + (data.qty || 0), 0),
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  };
+ 
+
+const handleDisplayProduction = async () => {
+  try {
+    
+    const getTtransOutput = await axios.get(
+      `${getUrlTtransOutput}?machine_no=${currentDataMachine.code}&part_no=${currentDataMachine.part_no}`,
+    );
+
+    setActual(
+      getTtransOutput.data.reduce((totalQty, data) => totalQty + (data.qty || 0), 0),
+    );
+
+    const getTworkDisplays = await axios.get(
+      `${getUrlTworkDisplay}?machine_no=${currentDataMachine.code}&part_code=${currentDataMachine.part_no}`,
+    );
+    const getData = getTworkDisplays.data;
+    setDataPlanning(getData.ctime);
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 
 
@@ -456,7 +463,7 @@ const Production = () => {
                       <span>Actual : {actual} </span>
                       <span>Belance : {dataPlanning - actual} </span>
                       <span>
-                        Performance (%) : {(actual / dataPlanning) * 100} %{' '}
+                        Performance (%) : {((actual / dataPlanning) * 100).toFixed(2)} %
                       </span>
                       <hr className="my-3 " />
                       <div className="col-md-12" style={{ fontSize: '12px' }}>
@@ -641,24 +648,22 @@ const Production = () => {
                                     Part No
                                   </label>
                                   <div className="col-sm-6">
-                                    <input
-                                      type="text"
-                                      value={
-                                        formDandori.part_no
-                                          ? formDandori.part_no
-                                          : ''
-                                      }
-                                      required
-                                      onChange={(e) =>
-                                        setFormDandori((prevData) => {
-                                          return {
-                                            ...prevData,
-                                            part_no: e.target.value,
-                                          };
-                                        })
-                                      }
-                                      className="form-control form-control-sm"
+                                    <Typeahead
+                                    options={getDataProduct}
+                                    labelKey={"part_no"}
+                                    id={(e) => (e[0] != null && e[0].id != null ? e[0].id : null)}
+                                    onChange={(e) =>
+                                      setFormDandori((prevData) => {
+                                        return {
+                                          ...prevData,
+                                          part_no:  e[0] != null && e[0].part_no != null ? e[0].part_no : '',
+                                          part_name:  e[0] != null && e[0].part_name != null ? e[0].part_name : '',
+                                          ct:  e[0] != null && e[0].ct != null ? e[0].ct : '',
+                                        };
+                                      })
+                                    }
                                     />
+                          
                                   </div>
                                 </div>
                                 <div className="row mb-3 justify-content-center">
@@ -673,15 +678,26 @@ const Production = () => {
                                           ? formDandori.part_name
                                           : ''
                                       }
-                                      required
-                                      onChange={(e) =>
-                                        setFormDandori((prevData) => {
-                                          return {
-                                            ...prevData,
-                                            part_name: e.target.value,
-                                          };
-                                        })
+                                      disabled
+                                 
+                                      className="form-control form-control-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="row mb-3 justify-content-center">
+                                  <label className="col-sm-3 col-form-label">
+                                    CT (Seccond)
+                                  </label>
+                                  <div className="col-sm-6">
+                                    <input
+                                      type="text"
+                                      value={
+                                        formDandori.ct
+                                          ? formDandori.ct
+                                          : ''
                                       }
+                                      disabled
+                                 
                                       className="form-control form-control-sm"
                                     />
                                   </div>
@@ -710,29 +726,7 @@ const Production = () => {
                                     />
                                   </div>
                                 </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    CT
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="Number"
-                                      value={
-                                        formDandori.ct ? formDandori.ct : ''
-                                      }
-                                      required
-                                      onChange={(e) =>
-                                        setFormDandori((prevData) => {
-                                          return {
-                                            ...prevData,
-                                            ct: e.target.value,
-                                          };
-                                        })
-                                      }
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
-                                </div>
+                       
                                 <div className="text-center">
                                   <button
                                     type="submit"

@@ -5,7 +5,6 @@ import { getUrlMachine, getUrlTtransOperation, getUrlTtransOutput, getUrlTworkDi
 const ProductionDisplay = () => {
   const [dataPlanning, setDataPlanning] = useState(0);
   const [currentDataMachine,setCurrentDataMachine] = useState([])
-  const [dataTtransOperation,setDataTtransOperation] = useState([])
   const [actual, setActual] = useState(0)
 
  
@@ -14,19 +13,20 @@ const ProductionDisplay = () => {
     const intervalDataMachine = setInterval( async() => {
        getDataMachine();
     }, 1000);
-    const intervalDataTtransOperation = setInterval(() => {
-      getDataTtrasOperation();
-    }, 1000);
-    const intervalDataTtransOutput = setInterval(() => {
+ /*    const intervalDataTtransOutput = setInterval(() => {
       getTtransOutput();
-    }, 1000);
-    const intervalTworkDisplay = setInterval(() => {
+    }, 1000); */
+  /*   const intervalTworkDisplay = setInterval(() => {
       getTworkDisplay();
+    }, 1000); */
+    const intervalAllDisplay = setInterval(() => {
+      handleDisplayProduction();
     }, 1000);
     
     
 
-    bagInterval.push(intervalDataMachine,intervalDataTtransOperation,intervalDataTtransOutput,intervalTworkDisplay);
+
+    bagInterval.push(intervalDataMachine,intervalAllDisplay);
  
     return () => {
       bagInterval.forEach((data) => {
@@ -35,7 +35,7 @@ const ProductionDisplay = () => {
     };
   },[]);
 
-  const getTworkDisplay = async () => {
+/*   const getTworkDisplay = async () => {
     try {
       const response = await axios.get(`${getUrlTworkDisplay}?machine_no=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}` )
       const getData = response.data
@@ -45,38 +45,36 @@ const ProductionDisplay = () => {
     }
   }
 
-
-  const getDataTtrasOperation = async () => {
+ */
+  const handleDisplayProduction = async () => {
     try {
-      const response = await axios.get(getUrlTtransOperation);
-      const cekStatusMachine = response.data.find((item) =>
-      process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.machine_no),
+      
+      const getTtransOutput = await axios.get(
+        `${getUrlTtransOutput}?machine_no=${currentDataMachine.code}&part_no=${currentDataMachine.part_no}`,
       );
-      setDataTtransOperation(cekStatusMachine);
-
+  
+      setActual(
+        getTtransOutput.data.reduce((totalQty, data) => totalQty + (data.qty || 0), 0),
+      );
+  
+      const getTworkDisplays = await axios.get(
+        `${getUrlTworkDisplay}?machine_no=${currentDataMachine.code}&part_code=${currentDataMachine.part_no}`,
+      );
+      const getData = getTworkDisplays.data;
+      setDataPlanning(getData.ctime);
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
+  
 
 
   const getDataMachine = async () => {
     try {
       const response = await axios.get(getUrlMachine);
       const getCurrentData = response.data.find(item => process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code))
-      if(getCurrentData){
-        
-        setCurrentDataMachine(prevData => {return { ...prevData,
-        name : getCurrentData.name ,
-        code : getCurrentData.code ,
-        status_green : getCurrentData.status_green ,
-        status_yellow : getCurrentData.status_yellow ,
-        status_red : getCurrentData.status_red ,
-        ct : prevData.ct === getCurrentData.ct ? prevData.ct : getCurrentData.ct,
-        qty : getCurrentData.qty,
-        }}  )
-      }
+      setCurrentDataMachine(getCurrentData)
     } catch (error) {
       console.log(error);
     }
@@ -84,7 +82,7 @@ const ProductionDisplay = () => {
 
   
 
-  const getTtransOutput = async () => {
+/*   const getTtransOutput = async () => {
     try {
       const response = await axios.get(`${getUrlTtransOutput}?machine_no=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`)
       setActual(response.data.reduce((totalQty, data) => totalQty + (data.qty || 0),0 ))
@@ -92,7 +90,7 @@ const ProductionDisplay = () => {
     } catch (error) {
       console.log(error)
     }
-  }
+  } */
 
 
   return (
@@ -110,12 +108,14 @@ const ProductionDisplay = () => {
           </div>
           <div className="col-md-12 mb-3">
             <div className="row">
+              <span>Part Code : {currentDataMachine.part_no}  </span>
+              <span>Part Name : {currentDataMachine.part_name}  </span>
               <span>Target : 1.200  </span>
               <span>Plan : {dataPlanning}  </span>
               <span>Actual : {actual} </span>
               <span>Belance : {dataPlanning - actual} </span>
               <span>
-                Performance (%) : {(actual / dataPlanning) * 100} %{' '}
+                Performance (%) : {((actual / dataPlanning) * 100).toFixed(2)} %
               </span>
               <hr className="my-3 " />
               <div className="col-md-12" style={{ fontSize: '12px' }}>
