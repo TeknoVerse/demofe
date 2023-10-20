@@ -9,6 +9,9 @@ import DeliveryNote from './views/modul/demo/delivery note/DeliveryNote'
 import MasterWarehouseProduction from './views/modul/master data/warehouse/MasterWarehouseProduction'
 import MasterWarehouseDelivery from './views/modul/master data/warehouse/MasterWarehouseDelivery'
 import Production from './views/modul/demo/production/Production'
+import ProductionDisplay from './views/modul/demo/singleDisplay/ProductionDisplay'
+import DataProductionDisplay from './views/modul/demo/singleDisplay/DataProductionDisplay'
+import OeeReportDisplay from './views/modul/demo/singleDisplay/OeeReportDisplay'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 /* const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
@@ -119,7 +122,7 @@ const routes = [
   { path: '/master/warehouse/production', name: 'Warehouse', element: MasterWarehouseProduction },
   { path: '/master/warehouse/delivery', name: 'Delivery', element: MasterWarehouseDelivery },
 
-
+  
 
 ]
 

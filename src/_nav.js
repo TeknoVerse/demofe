@@ -3,6 +3,7 @@ import CIcon from '@coreui/icons-react'
 import {
  /*  cilBell, */
   cilBuilding,
+  cilMonitor,
 /*   cilCalculator,
   cilChartPie,
   cilCursor,
@@ -89,11 +90,7 @@ const _nav = [
             name: 'Production',
             to: '/transaction/production/production',
           },
-          {
-            component: CNavItem,
-            name: 'Production Isu',
-            to: '/transaction/production/production_isu',
-          },
+   
      
         ]
       },
@@ -123,6 +120,29 @@ const _nav = [
         component: CNavItem,
         name: 'Delivery Note',
         to: '/transaction/deliveryNote',
+      },
+      
+    ]
+  },
+  {
+    component: CNavGroup,
+    name: 'Display Menu',
+    icon: <CIcon icon={cilMonitor} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Production ',
+        to: '/production-display',
+      },
+      {
+        component: CNavItem,
+        name: 'Machine ',
+        to: '/data-production-display',
+      },
+      {
+        component: CNavItem,
+        name: 'OEE ',
+        to: '/oee-display',
       },
       
     ]

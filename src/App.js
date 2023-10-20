@@ -5,6 +5,10 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import "bootstrap/dist/js/bootstrap.bundle.js"
 import './scss/style.scss'
 import './scss/Mycss.scss'
+import ProductionDisplay from './views/modul/demo/singleDisplay/ProductionDisplay'
+import DataProductionDisplay from './views/modul/demo/singleDisplay/DataProductionDisplay'
+import { DataProvider } from './views/modul/DataContext'
+import OeeReportDisplay from './views/modul/demo/singleDisplay/OeeReportDisplay'
 
 
 const loading = (
@@ -25,6 +29,8 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 class App extends Component {
   render() {
     return (
+      <DataProvider>
+
       <HashRouter>
         <Suspense fallback={loading}>
           <Routes>
@@ -32,10 +38,15 @@ class App extends Component {
             <Route exact path="/register" name="Register Page" element={<Register />} />
             <Route exact path="/404" name="Page 404" element={<Page404 />} />
             <Route exact path="/500" name="Page 500" element={<Page500 />} />
+            <Route exact path="/production-display" name="Production Display" element={<ProductionDisplay />} />
+            <Route exact path="/data-production-display" name="Data Production Display" element={<DataProductionDisplay />} />
+            <Route exact path="/oee-display" name="Oee Display" element={<OeeReportDisplay />} />
             <Route path="*" name="Home" element={<DefaultLayout />} />
           </Routes>
         </Suspense>
       </HashRouter>
+      </DataProvider>
+
     )
   }
 }
