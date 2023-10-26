@@ -15,3 +15,5 @@ export const getUrlMachine = hostanme+'/machine';
 export const getUrlCategory = hostanme+'/category';
 export const getUrlSubCategory = hostanme+'/sub-category';
 export const getUrlShift = hostanme+'/shift';
+export const getUrlTmastDefect = hostanme+'/defect';
+export const getUrlTtransDefect = hostanme+'/ttrans_defect';

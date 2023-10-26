@@ -1,3 +1,11 @@
+import {
+  cilArrowLeft,
+  cilArrowRight,
+  cilArrowThickLeft,
+  cilArrowThickRight,
+  cilSpeedometer,
+} from '@coreui/icons';
+import CIcon from '@coreui/icons-react';
 import { CCard } from '@coreui/react';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -7,18 +15,29 @@ import { Lampu_andon } from 'src/components/my component/MyIcon';
 import {
   getUrlMachine,
   getUrlSubCategory,
+  getUrlTtransDefect,
   getUrlTtransOperation,
   getUrlTtransOutput,
   getUrlTtransStop,
   getUrlTworkDisplay,
 } from 'src/config/Api';
-import { DataProduct } from 'src/config/GetDataApi';
+import { DataMasterDefect, DataProduct, DatattransDefect } from 'src/config/GetDataApi';
 
 const Production = () => {
   const newDate = new Date();
-  const currentTime = newDate.toLocaleString();
-  const getDataProduct = DataProduct() 
 
+  const [currentDataMachine, setCurrentDataMachine] = useState([]);
+
+  const currentTime = newDate.toLocaleString();
+  const getDataProduct = DataProduct();
+  const getTmastDefectByGroup = DataMasterDefect({
+    machine_group: currentDataMachine.machine_group_code,
+  });
+  const getTmastDefect = DataMasterDefect({machine_group : null});
+  const getTtransDefectByGroup = DatattransDefect({
+    machine_no: currentDataMachine.code,
+  });
+  
 
   const defaultMachineCode = 'MT-01';
   const defaultMachineName = 'Wire Machine';
@@ -39,10 +58,9 @@ const Production = () => {
   const [dataPlanning, setDataPlanning] = useState(0);
 
   const [dataMachine, setDataMachine] = useState([]);
-  
 
-  const [dataSubCategoryPnm, setDataSubCategoryPnm] = useState([])
-  const [dataSubCategoryPm, setDataSubCategoryPm] = useState([])
+  const [dataSubCategoryPnm, setDataSubCategoryPnm] = useState([]);
+  const [dataSubCategoryPm, setDataSubCategoryPm] = useState([]);
 
   const [formDandori, setFormDandori] = useState({
     status: false,
@@ -50,18 +68,15 @@ const Production = () => {
     code: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
   });
 
-  const [currentDataMachine, setCurrentDataMachine] = useState([]);
-
   const handleDataOutput = async (e) => {
     e.preventDefault();
     await axios.post(getUrlTtransOutput, {
       machine_no: currentDataMachine.code,
       qty: 1,
-      current_time : currentTime ,
+      current_time: currentTime,
       part_no: currentDataMachine.part_no,
     });
   };
-
 
   useEffect(() => {
     setTimeout(() => {
@@ -72,6 +87,7 @@ const Production = () => {
   useEffect(() => {
     const bagInterval = [];
     const intervalDataMachine = setInterval(() => {
+      
       getDataMachine();
     }, 1000);
     const IntervalTtransOperation = setInterval(() => {
@@ -80,9 +96,9 @@ const Production = () => {
     const IntervalDisplayProduction = setInterval(() => {
       handleDisplayProduction();
     }, 1000);
-   
+
     const IntervalTmastSubCategory = setInterval(() => {
-      getTmastSubCategory()
+      getTmastSubCategory();
     }, 1000);
 
     bagInterval.push(
@@ -97,11 +113,10 @@ const Production = () => {
         clearInterval(data);
       });
     };
-  },[dataMachine, checked,machine,dataSubCategoryPm,dataSubCategoryPnm]);
+  }, [dataMachine, checked, machine, dataSubCategoryPm, dataSubCategoryPnm]);
 
   const getTworkDisplay = async () => {
     try {
- 
     } catch (error) {
       console.log(error);
     }
@@ -295,15 +310,13 @@ const Production = () => {
       await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
         category: currentDataMachine.category === e.code ? null : e.code,
       });
-    
-       await axios.post(getUrlTtransStop, {
-        time : currentTime,
-        machine_no : process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code : e.category_code,
-        sub_category_code : e.code ,
-        
 
-      }) 
+      await axios.post(getUrlTtransStop, {
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        category_code: e.category_code,
+        sub_category_code: e.code,
+      });
     }
   };
 
@@ -323,52 +336,75 @@ const Production = () => {
       });
 
       await axios.post(getUrlTtransStop, {
-        time : currentTime,
-        machine_no : process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code : e.category_code,
-        sub_category_code : e.code 
-
-      }) 
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        category_code: e.category_code,
+        sub_category_code: e.code,
+      });
     }
   };
 
- 
+  const handleDisplayProduction = async () => {
+    try {
+      const getTtransOutput = await axios.get(
+        `${getUrlTtransOutput}?machine_no=${currentDataMachine.code}&part_no=${currentDataMachine.part_no}`,
+      );
 
-const handleDisplayProduction = async () => {
-  try {
-    
-    const getTtransOutput = await axios.get(
-      `${getUrlTtransOutput}?machine_no=${currentDataMachine.code}&part_no=${currentDataMachine.part_no}`,
-    );
+      setActual(
+        getTtransOutput.data.reduce(
+          (totalQty, data) => totalQty + (data.qty || 0),
+          0,
+        ),
+      );
 
-    setActual(
-      getTtransOutput.data.reduce((totalQty, data) => totalQty + (data.qty || 0), 0),
-    );
-
-    const getTworkDisplays = await axios.get(
-      `${getUrlTworkDisplay}?machine_no=${currentDataMachine.code}&part_code=${currentDataMachine.part_no}`,
-    );
-    const getData = getTworkDisplays.data;
-    setDataPlanning(getData.ctime);
-  } catch (error) {
-    console.log(error)
-  }
-}
-
-
+      const getTworkDisplays = await axios.get(
+        `${getUrlTworkDisplay}?machine_no=${currentDataMachine.code}&part_code=${currentDataMachine.part_no}`,
+      );
+      const getData = getTworkDisplays.data;
+      setDataPlanning(getData.ctime);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const getTmastSubCategory = async () => {
     try {
-      const response = await axios.get(getUrlSubCategory)
-      const dataSub = response.data
-      const categoryPnm = dataSub.filter(itemSub =>  itemSub.category_code === 'PNM-01')
-      const categoryPm = dataSub.filter(itemSub =>  itemSub.category_code === 'PM-01')
-      setDataSubCategoryPnm(categoryPnm)
-      setDataSubCategoryPm(categoryPm)
+      const response = await axios.get(getUrlSubCategory);
+      const dataSub = response.data;
+      const categoryPnm = dataSub.filter(
+        (itemSub) => itemSub.category_code === 'PNM-01',
+      );
+      const categoryPm = dataSub.filter(
+        (itemSub) => itemSub.category_code === 'PM-01',
+      );
+      setDataSubCategoryPnm(categoryPnm);
+      setDataSubCategoryPm(categoryPm);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
+
+  const [dataFormDefect, setDataFormDefect] = useState({
+    defect : [],
+    qty: 0,
+  });
+
+  const handleFormDefect = async (e) => {
+    e.preventDefault()
+    if(dataFormDefect.defect.length === 0 ){
+      console.log('kosong')
+    }else{
+      const getCT = getDataProduct.find(item => currentDataMachine.part_no === item.part_no )
+      await axios.post(getUrlTtransDefect,{
+        part_no : currentDataMachine.part_no,
+        time : currentTime,
+        machine_no : currentDataMachine.code,
+        qty : dataFormDefect.qty,
+        ct : getCT.ct,
+        category_code : dataFormDefect.defect.code
+      } )
+    }
+  };
 
   return (
     <CCard className="mb-4 p-2">
@@ -404,7 +440,21 @@ const handleDisplayProduction = async () => {
                   />
                 </div>
                 <div className="g-2 row col-md-6  pt-0 ms-2">
-                  <div className="  ">
+                  <div className="">
+                    <button
+                      disabled={
+                        machine.status !== 'on' ||
+                        currentDataMachine.status_green !== true
+                      }
+                      className="btn  btn-sm text-white fw-bold col-12 bg-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalDefect"
+                    >
+                      Product Defect
+                    </button>
+                  </div>
+                  <hr style={{ border: '2px solid black' }} className=" mb-0" />
+                  <div className="">
                     <button
                       disabled={
                         machine.status !== 'on' ||
@@ -463,7 +513,8 @@ const handleDisplayProduction = async () => {
                       <span>Actual : {actual} </span>
                       <span>Belance : {dataPlanning - actual} </span>
                       <span>
-                        Performance (%) : {((actual / dataPlanning) * 100).toFixed(2)} %
+                        Performance (%) :{' '}
+                        {((actual / dataPlanning) * 100).toFixed(2)} %
                       </span>
                       <hr className="my-3 " />
                       <div className="col-md-12" style={{ fontSize: '12px' }}>
@@ -497,7 +548,7 @@ const handleDisplayProduction = async () => {
                               {currentDataMachine && currentDataMachine.part_no}{' '}
                             </span>
                             <span>
-                              Part name : {' '}
+                              Part name :{' '}
                               {currentDataMachine &&
                                 currentDataMachine.part_name}{' '}
                             </span>
@@ -520,7 +571,6 @@ const handleDisplayProduction = async () => {
           </div>
         </div>
 
-   
         <div
           className="modal fade"
           id="modalButtonAndon"
@@ -576,30 +626,27 @@ const handleDisplayProduction = async () => {
                               </button>
                             </div>
 
-                            {
-                                dataSubCategoryPnm.map((item,index) => (
-                                  <div
-                                  key={index}
-                                  className={` col-6  ${
-                                    formDandori.status === true && 'd-none'
-                                  } `}
+                            {dataSubCategoryPnm.map((item, index) => (
+                              <div
+                                key={index}
+                                className={` col-6  ${
+                                  formDandori.status === true && 'd-none'
+                                } `}
+                              >
+                                <button
+                                  disabled={
+                                    currentDataMachine.length === 0 ||
+                                    currentDataMachine === null ||
+                                    (currentDataMachine.category &&
+                                      currentDataMachine.category !== item.code)
+                                  }
+                                  onClick={() => handleProblemNonMachine(item)}
+                                  className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
                                 >
-                                  <button
-                                    disabled={
-                                      currentDataMachine.length === 0 ||
-                                      currentDataMachine === null ||
-                                      (currentDataMachine.category &&
-                                        currentDataMachine.category !== item.code )
-                                    }
-                                    onClick={() => handleProblemNonMachine(item)}
-                                    className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
-                                  >
-                                {item.name}
-                                  </button>
-                                </div>
-                                ))
-                              }
-                           
+                                  {item.name}
+                                </button>
+                              </div>
+                            ))}
 
                             <div
                               className={` mt-4 col-12 ${
@@ -649,21 +696,35 @@ const handleDisplayProduction = async () => {
                                   </label>
                                   <div className="col-sm-6">
                                     <Typeahead
-                                    options={getDataProduct}
-                                    labelKey={"part_no"}
-                                    id={(e) => (e[0] != null && e[0].id != null ? e[0].id : null)}
-                                    onChange={(e) =>
-                                      setFormDandori((prevData) => {
-                                        return {
-                                          ...prevData,
-                                          part_no:  e[0] != null && e[0].part_no != null ? e[0].part_no : '',
-                                          part_name:  e[0] != null && e[0].part_name != null ? e[0].part_name : '',
-                                          ct:  e[0] != null && e[0].ct != null ? e[0].ct : '',
-                                        };
-                                      })
-                                    }
+                                      options={getDataProduct}
+                                      labelKey={'part_no'}
+                                      id={(e) =>
+                                        e[0] != null && e[0].id != null
+                                          ? e[0].id
+                                          : null
+                                      }
+                                      onChange={(e) =>
+                                        setFormDandori((prevData) => {
+                                          return {
+                                            ...prevData,
+                                            part_no:
+                                              e[0] != null &&
+                                              e[0].part_no != null
+                                                ? e[0].part_no
+                                                : '',
+                                            part_name:
+                                              e[0] != null &&
+                                              e[0].part_name != null
+                                                ? e[0].part_name
+                                                : '',
+                                            ct:
+                                              e[0] != null && e[0].ct != null
+                                                ? e[0].ct
+                                                : '',
+                                          };
+                                        })
+                                      }
                                     />
-                          
                                   </div>
                                 </div>
                                 <div className="row mb-3 justify-content-center">
@@ -679,7 +740,6 @@ const handleDisplayProduction = async () => {
                                           : ''
                                       }
                                       disabled
-                                 
                                       className="form-control form-control-sm"
                                     />
                                   </div>
@@ -692,12 +752,9 @@ const handleDisplayProduction = async () => {
                                     <input
                                       type="text"
                                       value={
-                                        formDandori.ct
-                                          ? formDandori.ct
-                                          : ''
+                                        formDandori.ct ? formDandori.ct : ''
                                       }
                                       disabled
-                                 
                                       className="form-control form-control-sm"
                                     />
                                   </div>
@@ -726,7 +783,7 @@ const handleDisplayProduction = async () => {
                                     />
                                   </div>
                                 </div>
-                       
+
                                 <div className="text-center">
                                   <button
                                     type="submit"
@@ -751,30 +808,27 @@ const handleDisplayProduction = async () => {
                       <div className=" p-2 ">
                         <div className=" d-flex flex-column ">
                           <div className="row text-white p-0 g-2">
-
-    {
-                                dataSubCategoryPm.map((item,index) => (
-                                  <div
-                                  key={index}
-                                  className={` col-6  ${
-                                    formDandori.status === true && 'd-none'
-                                  } `}  
+                            {dataSubCategoryPm.map((item, index) => (
+                              <div
+                                key={index}
+                                className={` col-6  ${
+                                  formDandori.status === true && 'd-none'
+                                } `}
+                              >
+                                <button
+                                  disabled={
+                                    currentDataMachine.length === 0 ||
+                                    currentDataMachine === null ||
+                                    (currentDataMachine.category &&
+                                      currentDataMachine.category !== item.code)
+                                  }
+                                  onClick={() => handleProblemMachine(item)}
+                                  className=" col-md-12 btn  btn-danger text-white p-3 align-items-center justify-content-center d-flex"
                                 >
-                                  <button
-                                    disabled={
-                                      currentDataMachine.length === 0 ||
-                                      currentDataMachine === null ||
-                                      (currentDataMachine.category &&
-                                        currentDataMachine.category !== item.code )
-                                    }
-                                    onClick={() => handleProblemMachine(item)}
-                                    className=" col-md-12 btn  btn-danger text-white p-3 align-items-center justify-content-center d-flex"
-                                  >
-                                {item.name}
-                                  </button>
-                                </div>
-                                ))
-                              }  
+                                  {item.name}
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
@@ -787,6 +841,135 @@ const handleDisplayProduction = async () => {
           </div>
         </div>
         {/* end modal button andon */}
+
+        {/* start modal Defect */}
+        <div
+          className="modal fade"
+          id="modalDefect"
+          data-bs-backdrop="static"
+          data-bs-keyboard="false"
+          tabIndex="-1"
+          aria-labelledby="modalDefectLabel"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog modal-xl modal-dialog-scrollable">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5" id="modalDefectLabel">
+                  Product Defect | Machine :{' '}
+                  {process.env.REACT_APP_DEFAULT_MACHINE_CODE}{' '}
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="container-fluid ">
+                  <div className="row">
+                    <div className="col-6  p-0 ">
+                      <div className="row g-3 m-0 p-0  ">
+                        {getTmastDefectByGroup.map((item, index) => (
+                          <div
+                            key={index}
+                            className="col-4 d-flex align-items-center  justify-content-center"
+                          >
+                            <button onClick={() => setDataFormDefect(prevData => {return { ...prevData, defect : item}})} className="col-12 btn btn-warning fw-bold">
+                              {item.name}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="col-6 bg-yellow">
+                      <div className="row  text-center  justify-content-center ">
+                        <span className="fw-bold fs-4">{dataFormDefect.defect ? dataFormDefect.defect.name : "_______"}</span>
+                        <hr className="p-0 mb-3 mt-3 w-50" />
+<form onSubmit={handleFormDefect}>
+
+                        <div className="d-flex justify-content-evenly align-items-cneter">
+                          <div className="btn btn-outline-primary btn-sm">
+                            <CIcon
+                              icon={cilArrowLeft}
+                              height={30}
+                              onClick={ () => setDataFormDefect(prevData => {return {...prevData, qty : prevData.qty -1 }})}
+                              customClassName="nav-icon"
+                            />
+                          </div>
+
+                          <div className="col-6">
+                            <input
+                            value={dataFormDefect.qty ? dataFormDefect.qty : 0}
+                            onChange={e => setDataFormDefect(prevData => {return {...prevData, qty : e.target.value}}) }
+                            type="number"
+                              required
+                              min={1}
+                              className="border  border-primary form-control"
+                            />
+                          </div>
+                          <div className="btn btn-outline-primary btn-sm">
+                            <CIcon
+                              icon={cilArrowRight}
+                              height={30}
+                              onClick={ () => setDataFormDefect(prevData => {return {...prevData, qty : prevData.qty +1 }})}
+                              customClassName="nav-icon"
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-3 text-center">
+                          <button type='submit' className="col-7 btn btn-primary">
+                            Enter
+                          </button>
+                        </div>
+                        </form>
+
+                        <div
+                          className="table-responsive   mt-3 "
+                          style={{ height: '12rem' }}
+                        >
+                          <table className="table table-sm align-middle  ">
+                            <thead className="">
+                              <tr className="text-center ">
+                                <th scope="col">No</th>
+                                <th scope="col">Jenis Defect</th>
+                                <th scope="col">QTY</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                            {getTtransDefectByGroup.length !== 0 && Object.values(getTtransDefectByGroup.reduce((data,values) => {
+                              if(data[values.category_code]){
+                                data[values.category_code].qty += values.qty
+                              }else{
+                                data[values.category_code] = {category_code : values.category_code, qty : values.qty}
+                              }
+                              return data
+                            }, {})).map((item,index) => (
+                              <tr key={index}>
+                                <th> {index+1} </th>
+                                <td> { getTmastDefect.find(masterDefect => masterDefect.code === item.category_code)?.name } </td>
+                                <td> {item.qty} </td>
+                              </tr>
+                            ))
+                            
+                            }
+                         
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                {/*   <button type="button" className="btn btn-success">Save</button> */}
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* end modal Defect */}
       </div>
     </CCard>
   );

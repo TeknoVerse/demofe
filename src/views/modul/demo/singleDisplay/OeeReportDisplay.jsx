@@ -10,7 +10,27 @@ const MyGaugeChart = ({ value, width, title, fs }) => {
     width: width,
   };
   const replaceValue = value ? String(value).replace(/\./g, '') : 0;
-  const currentValue = `0.` + replaceValue;
+  const cekData = String(value).split('.')[0]
+  let currentValue = `0.` + replaceValue ;
+ if(cekData === '0' || cekData.length === 1){
+    currentValue = `0.0` + replaceValue
+  }
+  if(cekData.length === 3){
+    let noIndex0 = []
+    const splitData = replaceValue.split('')
+    splitData.forEach((data,index) => {
+      if(index !== 0){
+        noIndex0 +=data
+      }
+    });
+    
+    currentValue = `${splitData[0]}.` +   parseFloat(noIndex0)
+  }
+  if(cekData.length ===0 ){
+
+   currentValue = `0.` + replaceValue  ;
+  }
+
   return (
     <div style={{ height: 'auto', width: 'auto' }} className="text-center ">
       <GaugeChart
@@ -20,10 +40,15 @@ const MyGaugeChart = ({ value, width, title, fs }) => {
         nrOfLevels={20}
         percent={currentValue}
       />
+       
+     {/*  <span className='text-white'> {value}
+      </span> */}
+      <br />
       <span
         style={{ marginTop: '40%', fontSize: `${fs}rem` }}
-        className="fw-bold text-white"
+        className="fw-bold text-white flex"
       >
+        
         {title}
       </span>
     </div>
@@ -113,7 +138,7 @@ const OeeReportDisplay = () => {
   const handleMethodOee = async (e) => {
     e.preventDefault()
     try {
-
+      setFirstView(false)
       if( dataFormOee.machine_no && dataFormOee.shift_id){
         refDate.current.value = ''
         refShift.current.clear()
@@ -122,11 +147,13 @@ const OeeReportDisplay = () => {
         const response = await axios.post(getUrlTworkOee, {
           machine_no : dataFormOee.machine_no,
           shift_id : dataFormOee.shift_id,
-          date : currentTime
+          date : dataFormOee.date
         })
+
+        
           if(response){
-            console.log(response.data)
-          setFirstView(false)
+            setCurrentOee(response.data)
+            setFirstView(false)
           }
       }
     
