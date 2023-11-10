@@ -5,20 +5,15 @@ import { getUrlMachine, getUrlTtransOperation, getUrlTtransOutput, getUrlTworkDi
 const ProductionDisplay = () => {
   const [dataPlanning, setDataPlanning] = useState(0);
   const [currentDataMachine,setCurrentDataMachine] = useState([])
-  const [actual, setActual] = useState(0)
+  const [actual, setActual] = useState('')
 
  
   useEffect( () => {
     const bagInterval = [];
-    const intervalDataMachine = setInterval( async() => {
+    const intervalDataMachine = setInterval(() => {
        getDataMachine();
     }, 1000);
- /*    const intervalDataTtransOutput = setInterval(() => {
-      getTtransOutput();
-    }, 1000); */
-  /*   const intervalTworkDisplay = setInterval(() => {
-      getTworkDisplay();
-    }, 1000); */
+ 
     const intervalAllDisplay = setInterval(() => {
       handleDisplayProduction();
     }, 1000);
@@ -33,9 +28,9 @@ const ProductionDisplay = () => {
         clearInterval(data);
       });
     };
-  },[]);
+  },[actual,]);
 
-/*   const getTworkDisplay = async () => {
+  const getTworkDisplay = async () => {
     try {
       const response = await axios.get(`${getUrlTworkDisplay}?machine_no=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}` )
       const getData = response.data
@@ -45,7 +40,7 @@ const ProductionDisplay = () => {
     }
   }
 
- */
+
   const handleDisplayProduction = async () => {
     try {
       

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { Component, useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -11,17 +11,116 @@ import {
 import { cilCheck, cilFilter, cilPencil, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import { getUrlKanban, getUrlSloc } from 'src/config/Api';
+import ReactToPrint from 'react-to-print';
 import axios from 'axios';
-import "./cssPrintKanban.css"
+import './cssPrintKanban.css';
+import PropTypes from 'prop-types';
 
+class PrintContent extends Component {
+  render() {
+    const { kanbanById, qrValue, qrCodeRef, kanbanRef,amount } = this.props;
+
+    let currentAmount = 1
+    if(amount){
+      currentAmount = amount
+    }
+    const newData = []
+
+    for (let index = 0; index < currentAmount; index++) {
+      newData.push (
+        <div className="col-6">
+        <div className="p-2 print-content  border border-3 ">
+          <div className="col-12 d-flex  justify-content-between">
+            <div className="text-start " ref={kanbanRef}>
+              <ul className="text-decoration-none">
+                <li>Part No : {kanbanById.part_code} </li>
+                <li>Part Name : {kanbanById.part_name} </li>
+                <li>Qty : {kanbanById.qty} </li>
+                <li>From : {kanbanById.from} </li>
+                <li>To : {kanbanById.to} </li>
+              </ul>
+            </div>
+            <div
+              className="border border-dark border-5  col-6 "
+              style={{
+                height: '150px',
+                width: '150px',
+                margin: '0px',
+                padding: '10px',
+              }}
+              ref={qrCodeRef}
+            >
+              {qrValue && (
+                <QRCodeSVG
+                  value={qrValue}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    padding: '0px',
+                    margin: '0px',
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      )
+      
+    }
+
+    return (
+      <div className="contianer-fluid p-0 m-0">
+        <div className="row g-2 p-1">
+        {newData}
+         
+        </div>
+        {/*  <div className="col-12  ">
+      <div className="row">
+        <div className="fw-bold fs-7 col-4   d-flex flex-column justify-content-center">
+          PT. Tekno Digital Nusantara
+        </div>
+        <div className="col-1">
+          <div
+            className=" bg-dark"
+            style={{ width: '3px', height: '100%' }}
+          ></div>
+        </div>
+        <div className="fw-bold fs-7 col-7 text-center  d-flex flex-column justify-content-center  ">
+          Kanban Warehouse
+        </div>
+
+        <div className="col-12">
+          <hr
+            className="mt-2 mb-1 col-12"
+            style={{ border: '1px solid black' }}
+          />
+        </div>
+        <div className="col-2">Part No :</div>
+        <div className="col-1">
+          <div
+            className=" bg-dark"
+            style={{ width: '3px', height: '100%' }}
+          ></div>
+        </div>
+        <div className="col-8 text-center">
+          <span className="fw-bold fs-1">12487G-HU</span>
+        </div>
+      </div>
+    </div> */}
+      </div>
+    );
+  }
+}
 
 const MasterKanban = () => {
+  const [amountPrint, seAmountPrint] = useState(1)
   const products = DataProduct();
   const slocs = DataSloc();
   const warehouses = DataWarehouse();
   const kanbans = DataKanban();
 
-  const [qrValue, setQRValue] = useState('');
+  const [qrValue, setQRValue] = useState([]);
   const [dataQrCode, setDataQrCode] = useState([]);
   const [profuctFiltered, setProductFiltered] = useState([]);
 
@@ -95,7 +194,7 @@ const MasterKanban = () => {
       setQRValue('');
       setCekForm(false);
     } else {
-     /*  const cekExitProduct = products.filter((product) =>
+      /*  const cekExitProduct = products.filter((product) =>
         warehouses
           .filter((warehouse) => warehouse.sloc_code.includes(e))
           .map((filteredWarehouse) => filteredWarehouse.part_code)
@@ -104,8 +203,9 @@ const MasterKanban = () => {
           ),
       ); */
 
-      const getProductInWarehouse = warehouses.filter(warehouse => 
-         warehouse.sloc_code.toLowerCase().includes(e.toLowerCase()) )
+      const getProductInWarehouse = warehouses.filter((warehouse) =>
+        warehouse.sloc_code.toLowerCase().includes(e.toLowerCase()),
+      );
       setCekForm(true);
       setProductFiltered(getProductInWarehouse);
     }
@@ -124,376 +224,16 @@ const MasterKanban = () => {
     setKanbanById([]);
   };
 
-
   const kanbanRef = useRef();
   const qrCodeRef = useRef();
 
-  const handlePrint = () => {
-    const printWindow = window.open('', '', 'width=420,height=297'); // A5 landscape size
-    const printDocument = printWindow.document;
-    printDocument.open();
-    printDocument.write(`<html xmlns:v="urn:schemas-microsoft-com:vml"
-    xmlns:o="urn:schemas-microsoft-com:office:office"
-    xmlns:x="urn:schemas-microsoft-com:office:excel"
-    xmlns="http://www.w3.org/TR/REC-html40">
-    
-    <head>
-    <meta name="Excel Workbook Frameset">
-    <meta http-equiv=Content-Type content="text/html; charset=windows-1252">
-    <meta name=ProgId content=Excel.Sheet>
-    <meta name=Generator content="Microsoft Excel 15">
-    <link rel=File-List href="Kanban%20Demo_files/filelist.xml">
-    <![if !supportTabStrip]>
-    <link id="shLink" href="Kanban%20Demo_files/sheet001.htm">
-    <link id="shLink" href="Kanban%20Demo_files/sheet002.htm">
-    <link id="shLink" href="Kanban%20Demo_files/sheet003.htm">
-    <link id="shLink" href="Kanban%20Demo_files/sheet004.htm">
-    <link id="shLink" href="Kanban%20Demo_files/sheet005.htm">
-    
-    <link id="shLink">
-    
-    <script language="JavaScript">
-    <!--
-     var c_lTabs=5;
-    
-     var c_rgszSh=new Array(c_lTabs);
-     c_rgszSh[0] = "Data";
-     c_rgszSh[1] = "Kanban";
-     c_rgszSh[2] = "tmast_product";
-     c_rgszSh[3] = "WH";
-     c_rgszSh[4] = "Sloc";
-    
-    
-    
-     var c_rgszClr=new Array(8);
-     c_rgszClr[0]="window";
-     c_rgszClr[1]="buttonface";
-     c_rgszClr[2]="windowframe";
-     c_rgszClr[3]="windowtext";
-     c_rgszClr[4]="threedlightshadow";
-     c_rgszClr[5]="threedhighlight";
-     c_rgszClr[6]="threeddarkshadow";
-     c_rgszClr[7]="threedshadow";
-    
-     var g_iShCur;
-     var g_rglTabX=new Array(c_lTabs);
-    
-    function fnGetIEVer()
-    {
-     var ua=window.navigator.userAgent
-     var msie=ua.indexOf("MSIE")
-     if (msie>0 && window.navigator.platform=="Win32")
-      return parseInt(ua.substring(msie+5,ua.indexOf(".", msie)));
-     else
-      return 0;
-    }
-    
-    function fnBuildFrameset()
-    {
-     var szHTML="<frameset rows=\"*,18\" border=0 width=0 frameborder=no framespacing=0>"+
-      "<frame src=\""+document.all.item("shLink")[4].href+"\" name=\"frSheet\" noresize>"+
-      "<frameset cols=\"54,*\" border=0 width=0 frameborder=no framespacing=0>"+
-      "<frame src=\"\" name=\"frScroll\" marginwidth=0 marginheight=0 scrolling=no>"+
-      "<frame src=\"\" name=\"frTabs\" marginwidth=0 marginheight=0 scrolling=no>"+
-      "</frameset></frameset><plaintext>";
-    
-     with (document) {
-      open("text/html","replace");
-      write(szHTML);
-      close();
-     }
-    
-     fnBuildTabStrip();
-    }
-    
-    function fnBuildTabStrip()
-    {
-     var szHTML=
-      "<html><head><style>.clScroll {font:8pt Courier New;color:"+c_rgszClr[6]+";cursor:default;line-height:10pt;}"+
-      ".clScroll2 {font:10pt Arial;color:"+c_rgszClr[6]+";cursor:default;line-height:11pt;}</style></head>"+
-      "<body onclick=\"event.returnValue=false;\" ondragstart=\"event.returnValue=false;\" onselectstart=\"event.returnValue=false;\" bgcolor="+c_rgszClr[4]+" topmargin=0 leftmargin=0><table cellpadding=0 cellspacing=0 width=100%>"+
-      "<tr><td colspan=6 height=1 bgcolor="+c_rgszClr[2]+"></td></tr>"+
-      "<tr><td style=\"font:1pt\">&nbsp;<td>"+
-      "<td valign=top id=tdScroll class=\"clScroll\" onclick=\"parent.fnFastScrollTabs(0);\" onmouseover=\"parent.fnMouseOverScroll(0);\" onmouseout=\"parent.fnMouseOutScroll(0);\"><a>&#171;</a></td>"+
-      "<td valign=top id=tdScroll class=\"clScroll2\" onclick=\"parent.fnScrollTabs(0);\" ondblclick=\"parent.fnScrollTabs(0);\" onmouseover=\"parent.fnMouseOverScroll(1);\" onmouseout=\"parent.fnMouseOutScroll(1);\"><a>&lt</a></td>"+
-      "<td valign=top id=tdScroll class=\"clScroll2\" onclick=\"parent.fnScrollTabs(1);\" ondblclick=\"parent.fnScrollTabs(1);\" onmouseover=\"parent.fnMouseOverScroll(2);\" onmouseout=\"parent.fnMouseOutScroll(2);\"><a>&gt</a></td>"+
-      "<td valign=top id=tdScroll class=\"clScroll\" onclick=\"parent.fnFastScrollTabs(1);\" onmouseover=\"parent.fnMouseOverScroll(3);\" onmouseout=\"parent.fnMouseOutScroll(3);\"><a>&#187;</a></td>"+
-      "<td style=\"font:1pt\">&nbsp;<td></tr></table></body></html>";
-    
-     with (frames['frScroll'].document) {
-      open("text/html","replace");
-      write(szHTML);
-      close();
-     }
-    
-     szHTML =
-      "<html><head>"+
-      "<style>A:link,A:visited,A:active {text-decoration:none;"+"color:"+c_rgszClr[3]+";}"+
-      ".clTab {cursor:hand;background:"+c_rgszClr[1]+";font:9pt Arial;padding-left:3px;padding-right:3px;text-align:center;}"+
-      ".clBorder {background:"+c_rgszClr[2]+";font:1pt;}"+
-      "</style></head><body onload=\"parent.fnInit();\" onselectstart=\"event.returnValue=false;\" ondragstart=\"event.returnValue=false;\" bgcolor="+c_rgszClr[4]+
-      " topmargin=0 leftmargin=0><table id=tbTabs cellpadding=0 cellspacing=0>";
-    
-     var iCellCount=(c_lTabs+1)*2;
-    
-     var i;
-     for (i=0;i<iCellCount;i+=2)
-      szHTML+="<col width=1><col>";
-    
-     var iRow;
-     for (iRow=0;iRow<6;iRow++) {
-    
-      szHTML+="<tr>";
-    
-      if (iRow==5)
-       szHTML+="<td colspan="+iCellCount+"></td>";
-      else {
-       if (iRow==0) {
-        for(i=0;i<iCellCount;i++)
-         szHTML+="<td height=1 class=\"clBorder\"></td>";
-       } else if (iRow==1) {
-        for(i=0;i<c_lTabs;i++) {
-         szHTML+="<td height=1 nowrap class=\"clBorder\">&nbsp;</td>";
-         szHTML+=
-          "<td id=tdTab height=1 nowrap class=\"clTab\" onmouseover=\"parent.fnMouseOverTab("+i+");\" onmouseout=\"parent.fnMouseOutTab("+i+");\">"+
-          "<a href=\""+document.all.item("shLink")[i].href+"\" target=\"frSheet\" id=aTab>&nbsp;"+c_rgszSh[i]+"&nbsp;</a></td>";
-        }
-        szHTML+="<td id=tdTab height=1 nowrap class=\"clBorder\"><a id=aTab>&nbsp;</a></td><td width=100%></td>";
-       } else if (iRow==2) {
-        for (i=0;i<c_lTabs;i++)
-         szHTML+="<td height=1></td><td height=1 class=\"clBorder\"></td>";
-        szHTML+="<td height=1></td><td height=1></td>";
-       } else if (iRow==3) {
-        for (i=0;i<iCellCount;i++)
-         szHTML+="<td height=1></td>";
-       } else if (iRow==4) {
-        for (i=0;i<c_lTabs;i++)
-         szHTML+="<td height=1 width=1></td><td height=1></td>";
-        szHTML+="<td height=1 width=1></td><td></td>";
-       }
-      }
-      szHTML+="</tr>";
-     }
-    
-     szHTML+="</table></body></html>";
-     with (frames['frTabs'].document) {
-      open("text/html","replace");
-      charset=document.charset;
-      write(szHTML);
-      close();
-     }
-    }
-    
-    function fnInit()
-    {
-     g_rglTabX[0]=0;
-     var i;
-     for (i=1;i<=c_lTabs;i++)
-      with (frames['frTabs'].document.all.tbTabs.rows[1].cells[fnTabToCol(i-1)])
-       g_rglTabX[i]=offsetLeft+offsetWidth-6;
-    }
-    
-    function fnTabToCol(iTab)
-    {
-     return 2*iTab+1;
-    }
-    
-    function fnNextTab(fDir)
-    {
-     var iNextTab=-1;
-     var i;
-    
-     with (frames['frTabs'].document.body) {
-      if (fDir==0) {
-       if (scrollLeft>0) {
-        for (i=0;i<c_lTabs&&g_rglTabX[i]<scrollLeft;i++);
-        if (i<c_lTabs)
-         iNextTab=i-1;
-       }
-      } else {
-       if (g_rglTabX[c_lTabs]+6>offsetWidth+scrollLeft) {
-        for (i=0;i<c_lTabs&&g_rglTabX[i]<=scrollLeft;i++);
-        if (i<c_lTabs)
-         iNextTab=i;
-       }
-      }
-     }
-     return iNextTab;
-    }
-    
-    function fnScrollTabs(fDir)
-    {
-     var iNextTab=fnNextTab(fDir);
-    
-     if (iNextTab>=0) {
-      frames['frTabs'].scroll(g_rglTabX[iNextTab],0);
-      return true;
-     } else
-      return false;
-    }
-    
-    function fnFastScrollTabs(fDir)
-    {
-     if (c_lTabs>16)
-      frames['frTabs'].scroll(g_rglTabX[fDir?c_lTabs-1:0],0);
-     else
-      if (fnScrollTabs(fDir)>0) window.setTimeout("fnFastScrollTabs("+fDir+");",5);
-    }
-    
-    function fnSetTabProps(iTab,fActive)
-    {
-     var iCol=fnTabToCol(iTab);
-     var i;
-    
-     if (iTab>=0) {
-      with (frames['frTabs'].document.all) {
-       with (tbTabs) {
-        for (i=0;i<=4;i++) {
-         with (rows[i]) {
-          if (i==0)
-           cells[iCol].style.background=c_rgszClr[fActive?0:2];
-          else if (i>0 && i<4) {
-           if (fActive) {
-            cells[iCol-1].style.background=c_rgszClr[2];
-            cells[iCol].style.background=c_rgszClr[0];
-            cells[iCol+1].style.background=c_rgszClr[2];
-           } else {
-            if (i==1) {
-             cells[iCol-1].style.background=c_rgszClr[2];
-             cells[iCol].style.background=c_rgszClr[1];
-             cells[iCol+1].style.background=c_rgszClr[2];
-            } else {
-             cells[iCol-1].style.background=c_rgszClr[4];
-             cells[iCol].style.background=c_rgszClr[(i==2)?2:4];
-             cells[iCol+1].style.background=c_rgszClr[4];
-            }
-           }
-          } else
-           cells[iCol].style.background=c_rgszClr[fActive?2:4];
-         }
-        }
-       }
-       with (aTab[iTab].style) {
-        cursor=(fActive?"default":"hand");
-        color=c_rgszClr[3];
-       }
-      }
-     }
-    }
-    
-    function fnMouseOverScroll(iCtl)
-    {
-     frames['frScroll'].document.all.tdScroll[iCtl].style.color=c_rgszClr[7];
-    }
-    
-    function fnMouseOutScroll(iCtl)
-    {
-     frames['frScroll'].document.all.tdScroll[iCtl].style.color=c_rgszClr[6];
-    }
-    
-    function fnMouseOverTab(iTab)
-    {
-     if (iTab!=g_iShCur) {
-      var iCol=fnTabToCol(iTab);
-      with (frames['frTabs'].document.all) {
-       tdTab[iTab].style.background=c_rgszClr[5];
-      }
-     }
-    }
-    
-    function fnMouseOutTab(iTab)
-    {
-     if (iTab>=0) {
-      var elFrom=frames['frTabs'].event.srcElement;
-      var elTo=frames['frTabs'].event.toElement;
-    
-      if ((!elTo) ||
-       (elFrom.tagName==elTo.tagName) ||
-       (elTo.tagName=="A" && elTo.parentElement!=elFrom) ||
-       (elFrom.tagName=="A" && elFrom.parentElement!=elTo)) {
-    
-       if (iTab!=g_iShCur) {
-        with (frames['frTabs'].document.all) {
-         tdTab[iTab].style.background=c_rgszClr[1];
-        }
-       }
-      }
-     }
-    }
-    
-    function fnSetActiveSheet(iSh)
-    {
-     if (iSh!=g_iShCur) {
-      fnSetTabProps(g_iShCur,false);
-      fnSetTabProps(iSh,true);
-      g_iShCur=iSh;
-     }
-    }
-    
-     window.g_iIEVer=fnGetIEVer();
-     if (window.g_iIEVer>=4)
-      fnBuildFrameset();
-    //-->
-    </script>
-    <![endif]><!--[if gte mso 9]><xml>
-     <x:ExcelWorkbook>
-      <x:ExcelWorksheets>
-       <x:ExcelWorksheet>
-        <x:Name>Data</x:Name>
-        <x:WorksheetSource HRef="Kanban%20Demo_files/sheet001.htm"/>
-       </x:ExcelWorksheet>
-       <x:ExcelWorksheet>
-        <x:Name>Kanban</x:Name>
-        <x:WorksheetSource HRef="Kanban%20Demo_files/sheet002.htm"/>
-       </x:ExcelWorksheet>
-       <x:ExcelWorksheet>
-        <x:Name>tmast_product</x:Name>
-        <x:WorksheetSource HRef="Kanban%20Demo_files/sheet003.htm"/>
-       </x:ExcelWorksheet>
-       <x:ExcelWorksheet>
-        <x:Name>WH</x:Name>
-        <x:WorksheetSource HRef="Kanban%20Demo_files/sheet004.htm"/>
-       </x:ExcelWorksheet>
-       <x:ExcelWorksheet>
-        <x:Name>Sloc</x:Name>
-        <x:WorksheetSource HRef="Kanban%20Demo_files/sheet005.htm"/>
-       </x:ExcelWorksheet>
-      </x:ExcelWorksheets>
-      <x:Stylesheet HRef="Kanban%20Demo_files/stylesheet.css"/>
-      <x:WindowHeight>7545</x:WindowHeight>
-      <x:WindowWidth>20490</x:WindowWidth>
-      <x:WindowTopX>32767</x:WindowTopX>
-      <x:WindowTopY>32767</x:WindowTopY>
-      <x:ActiveSheet>4</x:ActiveSheet>
-      <x:ProtectStructure>False</x:ProtectStructure>
-      <x:ProtectWindows>False</x:ProtectWindows>
-     </x:ExcelWorkbook>
-    </xml><![endif]-->
-    </head>
-    
-    <frameset rows="*,39" border=0 width=0 frameborder=no framespacing=0>
-     <frame src="Kanban%20Demo_files/sheet005.htm" name="frSheet">
-     <frame src="Kanban%20Demo_files/tabstrip.htm" name="frTabs" marginwidth=0 marginheight=0>
-     <noframes>
-      <body>
-       <p>This page uses frames, but your browser doesn't support them.</p>
-      </body>
-     </noframes>
-    </frameset>
-    </html>
-    
-    `);
-    printDocument.close();
-    printWindow.print();
-  };
 
-  const handlePrint2 = () => {
-      window.print(); // Memicu dialog pencetakan saat tombol diklik
- 
-  }
+  const componentPrintRef = useRef();
+
+  const [mountPage, setMountPage] = useState();
 
   return (
-    <div className="container-fluid body-kanban"  style={{}}>
+    <div className="container-fluid body-kanban" style={{}}>
       <div className="row g-3">
         <div className=" col-12 ">
           <form onSubmit={handleCreateQrCode} className="row g-1">
@@ -565,7 +305,8 @@ const MasterKanban = () => {
                       setDataQrCode((prevData) => {
                         return {
                           ...prevData,
-                          part_code: e[0] && e[0].part_code ? e[0].part_code : '',
+                          part_code:
+                            e[0] && e[0].part_code ? e[0].part_code : '',
                           part_name:
                             e[0] && e[0].part_code
                               ? products.find(
@@ -648,10 +389,10 @@ const MasterKanban = () => {
                       max={
                         dataQrCode.part_code
                           ? warehouses.find(
-                            (warehouse) =>
-                              parseInt(warehouse.part_code) ===
-                              parseInt(dataQrCode.part_code),
-                          )?.qty
+                              (warehouse) =>
+                                parseInt(warehouse.part_code) ===
+                                parseInt(dataQrCode.part_code),
+                            )?.qty
                           : '0'
                       }
                       className="form-control form-control-sm"
@@ -758,7 +499,10 @@ const MasterKanban = () => {
               </div>
             </div>
           </div>
-          <div className="table-responsive mt-2 bg-white mb-5" style={{height: "50vh"}}>
+          <div
+            className="table-responsive mt-2 bg-white mb-5"
+            style={{ height: '50vh' }}
+          >
             <table className="table table-sm text-center align-middle">
               <thead>
                 <tr className="text-center">
@@ -803,7 +547,6 @@ const MasterKanban = () => {
           </div>
         </div>
       </div>
-
       <div
         className="modal fade"
         id="detailKanban"
@@ -821,46 +564,51 @@ const MasterKanban = () => {
             <div className="modal-body">
               <div className="row">
                 {/* start kanban */}
-                <div   className="col-5" >
-                  <div  className=" d-flex print-content  border border-3 p-2 ">
-                    <div className="text-start col-6 justify-content-evenly" ref={kanbanRef}>
-                      <ul className='text-decoration-none'>
-                        <li>Part No : {kanbanById.part_code} </li>
-                        <li>Part Name : {kanbanById.part_name} </li>
-                        <li>Qty : {kanbanById.qty} </li>
-                        <li>From : {kanbanById.from} </li>
-                        <li>To : {kanbanById.to} </li>
-                      </ul>
-                    </div>
-                    <div
-                      className="border border-dark border-5  col-6 "
-                      style={{ height: '150px', width: '150px', margin :'0px', padding : '10px',  }}
-                      ref={qrCodeRef}
+                <div></div>
 
-                     
-                    >
-                      {qrValue && (
-                        <QRCodeSVG
-                          value={qrValue}
-                          style={{width : '100%', height : '100%', padding : "0px", margin : '0px'}}
-                        />
-                      )}
-                    </div>
-                  </div>
+                <div className="col-12">
+                  <PrintContent
+                    ref={componentPrintRef}
+                    kanbanById={kanbanById}
+                    qrValue={qrValue}
+                    amount={amountPrint}
+                  />
                 </div>
                 {/* end kanban */}
 
                 {/* start button print kanban */}
-                <div className='col-4'>
-                    <div className='d-flex'>
-                        <button onClick={handlePrint} className='btn btn-success text-white'>Print Kanban</button>
-                    </div>
-          
+                <div className="col-4 mt-3">
+                  <div className="d-flex">
+            
+                  </div>
                 </div>
                 {/* end button print kanban */}
               </div>
             </div>
+            
             <div className="modal-footer">
+            <div className="row mb-3">
+    <label  className="col-sm-4 col-form-label">Amount</label>
+    <div className="col-sm-8">
+      <input type="number" onChange={e => seAmountPrint(e.target.value) }  className="form-control" />
+    </div>
+  </div>
+
+            <ReactToPrint
+                      content={() => componentPrintRef.current}
+                      documentTitle="Kanban Warehouse"
+                      removeAfterPrint
+                      trigger={() => {
+                        return (
+                          <button
+                            onClick={() => setMountPage(4)}
+                            className="btn btn-primary"
+                          >
+                            Print{' '}
+                          </button>
+                        );
+                      }}
+                    />
               <button
                 type="button"
                 className="btn btn-danger text-white"
@@ -877,3 +625,11 @@ const MasterKanban = () => {
   );
 };
 export default MasterKanban;
+
+PrintContent.propTypes = {
+  kanbanById: PropTypes.array,
+  qrValue: PropTypes.array,
+  qrCodeRef: PropTypes.object,
+  kanbanRef: PropTypes.object,
+  amount: PropTypes.number,
+};

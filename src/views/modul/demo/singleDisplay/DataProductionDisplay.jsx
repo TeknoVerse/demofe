@@ -1,15 +1,19 @@
+import { cilArrowLeft, cilArrowRight } from '@coreui/icons';
+import CIcon from '@coreui/icons-react';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import {
   getUrlMachine,
   getUrlSubCategory,
+  getUrlTtransDefect,
   getUrlTtransStop,
 } from 'src/config/Api';
-import { DataProduct } from 'src/config/GetDataApi';
+import { DataProduct, DataMasterDefect, DatattransDefect } from 'src/config/GetDataApi';
 
 const DataProductionDisplay = () => {
-  const getDataProduct = DataProduct()
+ 
+  const getDataProduct = DataProduct();
   const newDate = new Date();
   const currentTime = newDate.toLocaleString();
   const [currentDataMachine, setCurrentDataMachine] = useState([]);
@@ -43,7 +47,7 @@ const DataProductionDisplay = () => {
         clearInterval(data);
       });
     };
-  });
+  }, [currentDataMachine,displayOptions,dataSubCategoryPm,dataSubCategoryPnm]);
 
   const getTmastSubCategory = async () => {
     try {
@@ -158,17 +162,191 @@ const DataProductionDisplay = () => {
     }
   };
 
+  const getTmastDefectByGroup = DataMasterDefect({
+    machine_group: currentDataMachine.machine_group_code,
+  });
+  const getTtransDefectByGroup = DatattransDefect({
+    machine_no: currentDataMachine.code,
+  });
+
+  const [dataFormDefect, setDataFormDefect] = useState({
+    defect: [],
+    qty: 0,
+  });
+
+  const getTmastDefect = DataMasterDefect({ machine_group: null });
+
+  const handleFormDefect = async (e) => {
+    e.preventDefault();
+    if (dataFormDefect.defect.length === 0) {
+      console.log('kosong');
+    } else {
+      const getCT = getDataProduct.find(
+        (item) => currentDataMachine.part_no === item.part_no,
+      );
+      await axios.post(getUrlTtransDefect, {
+        part_no: currentDataMachine.part_no,
+        time: currentTime,
+        machine_no: currentDataMachine.code,
+        qty: dataFormDefect.qty,
+        ct: getCT.ct,
+        category_code: dataFormDefect.defect.code,
+      });
+    }
+  };
+
   return (
     <div
       className="d-flex align-items-center justify-content-center container-fluid"
       style={{ height: '100vh' }}
     >
-      <div className="col-md-6 ">
+      <div className="col-md-7 ">
         <div className="row g-3 p-0">
+          <div className={`${
+              currentDataMachine.length === 0 ||
+              currentDataMachine.defect === false
+                ? 'd-none'
+                : ''
+            } col-md-12   p-1 `}>
+            <div className="row">
+              <div className="col-6  p-0 ">
+                <div className="row g-3 m-0 p-0  ">
+                  {getTmastDefectByGroup.map((item, index) => (
+                    <div
+                      key={index}
+                      className="col-4 d-flex align-items-center  justify-content-center"
+                    >
+                      <button
+                        onClick={() =>
+                          setDataFormDefect((prevData) => {
+                            return { ...prevData, defect: item };
+                          })
+                        }
+                        className="col-12 btn btn-warning fw-bold"
+                      >
+                        {item.name}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-6 bg-yellow">
+                <div className="row  text-center  justify-content-center ">
+                  <span className="fw-bold fs-4">
+                    {dataFormDefect.defect
+                      ? dataFormDefect.defect.name
+                      : '_______'}
+                  </span>
+                  <hr className="p-0 mb-3 mt-3 w-50" />
+                  <form onSubmit={handleFormDefect}>
+                    <div className="d-flex justify-content-evenly align-items-cneter">
+                      <div className="btn btn-outline-primary btn-sm">
+                        <CIcon
+                          icon={cilArrowLeft}
+                          height={30}
+                          onClick={() =>
+                            setDataFormDefect((prevData) => {
+                              return {
+                                ...prevData,
+                                qty: prevData.qty - 1,
+                              };
+                            })
+                          }
+                          customClassName="nav-icon"
+                        />
+                      </div>
+
+                      <div className="col-6">
+                        <input
+                          value={dataFormDefect.qty ? dataFormDefect.qty : 0}
+                          onChange={(e) =>
+                            setDataFormDefect((prevData) => {
+                              return { ...prevData, qty: e.target.value };
+                            })
+                          }
+                          type="number"
+                          required
+                          min={1}
+                          className="border  border-primary form-control"
+                        />
+                      </div>
+                      <div className="btn btn-outline-primary btn-sm">
+                        <CIcon
+                          icon={cilArrowRight}
+                          height={30}
+                          onClick={() =>
+                            setDataFormDefect((prevData) => {
+                              return {
+                                ...prevData,
+                                qty: prevData.qty + 1,
+                              };
+                            })
+                          }
+                          customClassName="nav-icon"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3 text-center">
+                      <button type="submit" className="col-7 btn btn-primary">
+                        Enter
+                      </button>
+                    </div>
+                  </form>
+
+                  <div
+                    className="table-responsive   mt-3 "
+                    style={{ height: '12rem' }}
+                  >
+                    <table className="table table-sm align-middle  ">
+                      <thead className="">
+                        <tr className="text-center ">
+                          <th scope="col">No</th>
+                          <th scope="col">Jenis Defect</th>
+                          <th scope="col">QTY</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getTtransDefectByGroup.length !== 0 &&
+                          Object.values(
+                            getTtransDefectByGroup.reduce((data, values) => {
+                              if (data[values.category_code]) {
+                                data[values.category_code].qty += values.qty;
+                              } else {
+                                data[values.category_code] = {
+                                  category_code: values.category_code,
+                                  qty: values.qty,
+                                };
+                              }
+                              return data;
+                            }, {}),
+                          ).map((item, index) => (
+                            <tr key={index}>
+                              <th> {index + 1} </th>
+                              <td>
+                                {' '}
+                                {
+                                  getTmastDefect.find(
+                                    (masterDefect) =>
+                                      masterDefect.code === item.category_code,
+                                  )?.name
+                                }{' '}
+                              </td>
+                              <td> {item.qty} </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div
             className={`${
               currentDataMachine.length === 0 ||
-              currentDataMachine.status_green === false
+              currentDataMachine.status_green === false ||
+              currentDataMachine.defect === true
+
                 ? 'd-none'
                 : ''
             } col-md-12   p-1 `}
@@ -336,90 +514,78 @@ const DataProductionDisplay = () => {
                     />
                   </div>
                 </div>
-               
+
                 <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    Part No
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <Typeahead
-                                    options={getDataProduct}
-                                    labelKey={"part_no"}
-                                    id={(e) => (e[0] != null && e[0].id != null ? e[0].id : null)}
-                                    onChange={(e) =>
-                                      setFormDandori((prevData) => {
-                                        return {
-                                          ...prevData,
-                                          part_no:  e[0] != null && e[0].part_no != null ? e[0].part_no : '',
-                                          part_name:  e[0] != null && e[0].part_name != null ? e[0].part_name : '',
-                                          ct:  e[0] != null && e[0].ct != null ? e[0].ct : '',
-                                        };
-                                      })
-                                    }
-                                    />
-                          
-                                  </div>
-                                </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    Part Name
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="text"
-                                      value={
-                                        formDandori.part_name
-                                          ? formDandori.part_name
-                                          : ''
-                                      }
-                                      disabled
-                                 
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    CT (Seccond)
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="text"
-                                      value={
-                                        formDandori.ct
-                                          ? formDandori.ct
-                                          : ''
-                                      }
-                                      disabled
-                                 
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    {' '}
-                                    QTY
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="number"
-                                      value={
-                                        formDandori.qty ? formDandori.qty : ''
-                                      }
-                                      required
-                                      onChange={(e) =>
-                                        setFormDandori((prevData) => {
-                                          return {
-                                            ...prevData,
-                                            qty: e.target.value,
-                                          };
-                                        })
-                                      }
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
-                                </div>
+                  <label className="col-sm-3 col-form-label">Part No</label>
+                  <div className="col-sm-6">
+                    <Typeahead
+                      options={getDataProduct}
+                      labelKey={'part_no'}
+                      id={(e) =>
+                        e[0] != null && e[0].id != null ? e[0].id : null
+                      }
+                      onChange={(e) =>
+                        setFormDandori((prevData) => {
+                          return {
+                            ...prevData,
+                            part_no:
+                              e[0] != null && e[0].part_no != null
+                                ? e[0].part_no
+                                : '',
+                            part_name:
+                              e[0] != null && e[0].part_name != null
+                                ? e[0].part_name
+                                : '',
+                            ct: e[0] != null && e[0].ct != null ? e[0].ct : '',
+                          };
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="row mb-3 justify-content-center">
+                  <label className="col-sm-3 col-form-label">Part Name</label>
+                  <div className="col-sm-6">
+                    <input
+                      type="text"
+                      value={formDandori.part_name ? formDandori.part_name : ''}
+                      disabled
+                      className="form-control form-control-sm"
+                    />
+                  </div>
+                </div>
+                <div className="row mb-3 justify-content-center">
+                  <label className="col-sm-3 col-form-label">
+                    CT (Seccond)
+                  </label>
+                  <div className="col-sm-6">
+                    <input
+                      type="text"
+                      value={formDandori.ct ? formDandori.ct : ''}
+                      disabled
+                      className="form-control form-control-sm"
+                    />
+                  </div>
+                </div>
+                <div className="row mb-3 justify-content-center">
+                  <label className="col-sm-3 col-form-label"> QTY</label>
+                  <div className="col-sm-6">
+                    <input
+                      type="number"
+                      value={formDandori.qty ? formDandori.qty : ''}
+                      required
+                      onChange={(e) =>
+                        setFormDandori((prevData) => {
+                          return {
+                            ...prevData,
+                            qty: e.target.value,
+                          };
+                        })
+                      }
+                      className="form-control form-control-sm"
+                    />
+                  </div>
+                </div>
                 <div className="text-center">
                   <button
                     type="submit"

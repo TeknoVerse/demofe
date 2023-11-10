@@ -21,7 +21,11 @@ import {
   getUrlTtransStop,
   getUrlTworkDisplay,
 } from 'src/config/Api';
-import { DataMasterDefect, DataProduct, DatattransDefect } from 'src/config/GetDataApi';
+import {
+  DataMasterDefect,
+  DataProduct,
+  DatattransDefect,
+} from 'src/config/GetDataApi';
 
 const Production = () => {
   const newDate = new Date();
@@ -33,11 +37,10 @@ const Production = () => {
   const getTmastDefectByGroup = DataMasterDefect({
     machine_group: currentDataMachine.machine_group_code,
   });
-  const getTmastDefect = DataMasterDefect({machine_group : null});
+  const getTmastDefect = DataMasterDefect({ machine_group: null });
   const getTtransDefectByGroup = DatattransDefect({
     machine_no: currentDataMachine.code,
   });
-  
 
   const defaultMachineCode = 'MT-01';
   const defaultMachineName = 'Wire Machine';
@@ -51,6 +54,7 @@ const Production = () => {
   const [displayModalAndon, setDisplayModalAndon] = useState({
     yellow: false,
     red: false,
+    defect : false
   });
 
   const [dataTtransOperation, setDataTtransOperation] = useState([]);
@@ -87,7 +91,6 @@ const Production = () => {
   useEffect(() => {
     const bagInterval = [];
     const intervalDataMachine = setInterval(() => {
-      
       getDataMachine();
     }, 1000);
     const IntervalTtransOperation = setInterval(() => {
@@ -141,6 +144,25 @@ const Production = () => {
       });
     }
   };
+  const handleDefect = async (e) => {
+    e.preventDefault();
+    setDisplayModalAndon((prevData) => {
+      return { ...prevData, defect : true };
+    });
+
+    const cekMachineCode = dataMachine.find((item) =>
+      process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
+    );
+
+    if (cekMachineCode) {
+      await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
+        status_green: true,
+        status_yellow: false,
+        status_red: false,
+        defect: true,
+      });
+    }
+  };
 
   const handleLightRed = async (e) => {
     e.preventDefault();
@@ -166,7 +188,7 @@ const Production = () => {
       const response = await axios.get(getUrlTtransOperation);
       setDataTtransOperation(response.data);
       const cekStatusMachine = dataTtransOperation.find((item) =>
-        item.machine_no.includes(defaultMachineCode),
+        item.machine_no.includes(process.env.REACT_APP_DEFAULT_MACHINE_CODE),
       );
       if (cekStatusMachine) {
         if (cekStatusMachine.finish === null) {
@@ -198,7 +220,7 @@ const Production = () => {
   const handleMachine = async (e) => {
     try {
       const cekStatusMachine = dataTtransOperation.find((item) =>
-        item.machine_no.includes(defaultMachineCode),
+        item.machine_no.includes(process.env.REACT_APP_DEFAULT_MACHINE_CODE),
       );
 
       if (cekStatusMachine) {
@@ -220,7 +242,7 @@ const Production = () => {
         }
       } else {
         await axios.post(getUrlTtransOperation, {
-          machine_no: defaultMachineCode,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
           start: currentTime,
         });
       }
@@ -244,7 +266,7 @@ const Production = () => {
       const response = await axios.get(getUrlMachine);
       setDataMachine(response.data);
       const getCurrentData = response.data.find((item) =>
-        defaultMachineCode.includes(item.code),
+        process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
       );
       if (getCurrentData) {
         setCurrentDataMachine(getCurrentData);
@@ -283,15 +305,17 @@ const Production = () => {
   const handleCloseModalAndon = async (e) => {
     e.preventDefault();
 
+    setDisplayModalAndon([])
     const cekMachineCode = dataMachine.find((item) =>
       process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
     );
 
-    if (cekMachineCode) {
+    if (cekMachineCode.length !== 0) {
       await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
         status_green: true,
         status_yellow: false,
         status_red: false,
+        defect: false,
       });
     }
   };
@@ -385,24 +409,26 @@ const Production = () => {
   };
 
   const [dataFormDefect, setDataFormDefect] = useState({
-    defect : [],
+    defect: [],
     qty: 0,
   });
 
   const handleFormDefect = async (e) => {
-    e.preventDefault()
-    if(dataFormDefect.defect.length === 0 ){
-      console.log('kosong')
-    }else{
-      const getCT = getDataProduct.find(item => currentDataMachine.part_no === item.part_no )
-      await axios.post(getUrlTtransDefect,{
-        part_no : currentDataMachine.part_no,
-        time : currentTime,
-        machine_no : currentDataMachine.code,
-        qty : dataFormDefect.qty,
-        ct : getCT.ct,
-        category_code : dataFormDefect.defect.code
-      } )
+    e.preventDefault();
+    if (dataFormDefect.defect.length === 0) {
+      console.log('kosong');
+    } else {
+      const getCT = getDataProduct.find(
+        (item) => currentDataMachine.part_no === item.part_no,
+      );
+      await axios.post(getUrlTtransDefect, {
+        part_no: currentDataMachine.part_no,
+        time: currentTime,
+        machine_no: currentDataMachine.code,
+        qty: dataFormDefect.qty,
+        ct: getCT.ct,
+        category_code: dataFormDefect.defect.code,
+      });
     }
   };
 
@@ -445,10 +471,12 @@ const Production = () => {
                       disabled={
                         machine.status !== 'on' ||
                         currentDataMachine.status_green !== true
+                        
                       }
+                      onClick={handleDefect}
                       className="btn  btn-sm text-white fw-bold col-12 bg-danger"
                       data-bs-toggle="modal"
-                      data-bs-target="#modalDefect"
+                      data-bs-target="#modalButtonAndon"
                     >
                       Product Defect
                     </button>
@@ -580,8 +608,8 @@ const Production = () => {
           aria-labelledby="staticBackdropLabel"
           aria-hidden="true"
         >
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content ">
+          <div className="modal-dialog modal-xl">
+            <div className="modal-content  ">
               <div className="modal-header">
                 <h1 className="modal-title fs-5" id="modalButtonAndonLabel">
                   {displayModalAndon.yellow
@@ -834,6 +862,152 @@ const Production = () => {
                       </div>
                     </div>
                   </div>
+                  <div       className={` ${
+                      !displayModalAndon.defect  && 'd-none'
+                    } col-md-12 rounded  p-2   `}>
+                  <div className="row">
+                    <div className="col-6  p-0 ">
+                      <div className="row g-3 m-0 p-0  ">
+                        {getTmastDefectByGroup.map((item, index) => (
+                          <div
+                            key={index}
+                            className="col-4 d-flex align-items-center  justify-content-center"
+                          >
+                            <button
+                              onClick={() =>
+                                setDataFormDefect((prevData) => {
+                                  return { ...prevData, defect: item };
+                                })
+                              }
+                              className="col-12 btn btn-warning fw-bold"
+                            >
+                              {item.name}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="col-6 bg-yellow">
+                      <div className="row  text-center  justify-content-center ">
+                        <span className="fw-bold fs-4">
+                          {dataFormDefect.defect
+                            ? dataFormDefect.defect.name
+                            : '_______'}
+                        </span>
+                        <hr className="p-0 mb-3 mt-3 w-50" />
+                        <form onSubmit={handleFormDefect}>
+                          <div className="d-flex justify-content-evenly align-items-cneter">
+                            <div className="btn btn-outline-primary btn-sm">
+                              <CIcon
+                                icon={cilArrowLeft}
+                                height={30}
+                                onClick={() =>
+                                  setDataFormDefect((prevData) => {
+                                    return {
+                                      ...prevData,
+                                      qty: prevData.qty - 1,
+                                    };
+                                  })
+                                }
+                                customClassName="nav-icon"
+                              />
+                            </div>
+
+                            <div className="col-6">
+                              <input
+                                value={
+                                  dataFormDefect.qty ? dataFormDefect.qty : 0
+                                }
+                                onChange={(e) =>
+                                  setDataFormDefect((prevData) => {
+                                    return { ...prevData, qty: e.target.value };
+                                  })
+                                }
+                                type="number"
+                                required
+                                min={1}
+                                className="border  border-primary form-control"
+                              />
+                            </div>
+                            <div className="btn btn-outline-primary btn-sm">
+                              <CIcon
+                                icon={cilArrowRight}
+                                height={30}
+                                onClick={() =>
+                                  setDataFormDefect((prevData) => {
+                                    return {
+                                      ...prevData,
+                                      qty: prevData.qty + 1,
+                                    };
+                                  })
+                                }
+                                customClassName="nav-icon"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-3 text-center">
+                            <button
+                              type="submit"
+                              className="col-7 btn btn-primary"
+                            >
+                              Enter
+                            </button>
+                          </div>
+                        </form>
+
+                        <div
+                          className="table-responsive   mt-3 "
+                          style={{ height: '12rem' }}
+                        >
+                          <table className="table table-sm align-middle  ">
+                            <thead className="">
+                              <tr className="text-center ">
+                                <th scope="col">No</th>
+                                <th scope="col">Jenis Defect</th>
+                                <th scope="col">QTY</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {getTtransDefectByGroup.length !== 0 &&
+                                Object.values(
+                                  getTtransDefectByGroup.reduce(
+                                    (data, values) => {
+                                      if (data[values.category_code]) {
+                                        data[values.category_code].qty +=
+                                          values.qty;
+                                      } else {
+                                        data[values.category_code] = {
+                                          category_code: values.category_code,
+                                          qty: values.qty,
+                                        };
+                                      }
+                                      return data;
+                                    },
+                                    {},
+                                  ),
+                                ).map((item, index) => (
+                                  <tr key={index}>
+                                    <th> {index + 1} </th>
+                                    <td>
+                                      {' '}
+                                      {
+                                        getTmastDefect.find(
+                                          (masterDefect) =>
+                                            masterDefect.code ===
+                                            item.category_code,
+                                        )?.name
+                                      }{' '}
+                                    </td>
+                                    <td> {item.qty} </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                   {/*  */}
                 </div>
               </div>
@@ -867,101 +1041,7 @@ const Production = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                <div className="container-fluid ">
-                  <div className="row">
-                    <div className="col-6  p-0 ">
-                      <div className="row g-3 m-0 p-0  ">
-                        {getTmastDefectByGroup.map((item, index) => (
-                          <div
-                            key={index}
-                            className="col-4 d-flex align-items-center  justify-content-center"
-                          >
-                            <button onClick={() => setDataFormDefect(prevData => {return { ...prevData, defect : item}})} className="col-12 btn btn-warning fw-bold">
-                              {item.name}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="col-6 bg-yellow">
-                      <div className="row  text-center  justify-content-center ">
-                        <span className="fw-bold fs-4">{dataFormDefect.defect ? dataFormDefect.defect.name : "_______"}</span>
-                        <hr className="p-0 mb-3 mt-3 w-50" />
-<form onSubmit={handleFormDefect}>
-
-                        <div className="d-flex justify-content-evenly align-items-cneter">
-                          <div className="btn btn-outline-primary btn-sm">
-                            <CIcon
-                              icon={cilArrowLeft}
-                              height={30}
-                              onClick={ () => setDataFormDefect(prevData => {return {...prevData, qty : prevData.qty -1 }})}
-                              customClassName="nav-icon"
-                            />
-                          </div>
-
-                          <div className="col-6">
-                            <input
-                            value={dataFormDefect.qty ? dataFormDefect.qty : 0}
-                            onChange={e => setDataFormDefect(prevData => {return {...prevData, qty : e.target.value}}) }
-                            type="number"
-                              required
-                              min={1}
-                              className="border  border-primary form-control"
-                            />
-                          </div>
-                          <div className="btn btn-outline-primary btn-sm">
-                            <CIcon
-                              icon={cilArrowRight}
-                              height={30}
-                              onClick={ () => setDataFormDefect(prevData => {return {...prevData, qty : prevData.qty +1 }})}
-                              customClassName="nav-icon"
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-3 text-center">
-                          <button type='submit' className="col-7 btn btn-primary">
-                            Enter
-                          </button>
-                        </div>
-                        </form>
-
-                        <div
-                          className="table-responsive   mt-3 "
-                          style={{ height: '12rem' }}
-                        >
-                          <table className="table table-sm align-middle  ">
-                            <thead className="">
-                              <tr className="text-center ">
-                                <th scope="col">No</th>
-                                <th scope="col">Jenis Defect</th>
-                                <th scope="col">QTY</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                            {getTtransDefectByGroup.length !== 0 && Object.values(getTtransDefectByGroup.reduce((data,values) => {
-                              if(data[values.category_code]){
-                                data[values.category_code].qty += values.qty
-                              }else{
-                                data[values.category_code] = {category_code : values.category_code, qty : values.qty}
-                              }
-                              return data
-                            }, {})).map((item,index) => (
-                              <tr key={index}>
-                                <th> {index+1} </th>
-                                <td> { getTmastDefect.find(masterDefect => masterDefect.code === item.category_code)?.name } </td>
-                                <td> {item.qty} </td>
-                              </tr>
-                            ))
-                            
-                            }
-                         
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               
               </div>
               <div className="modal-footer">
                 {/*   <button type="button" className="btn btn-success">Save</button> */}

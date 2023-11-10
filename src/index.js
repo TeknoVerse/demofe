@@ -7,7 +7,7 @@ import reportWebVitals from './reportWebVitals'
 import { Provider } from 'react-redux'
 import store from './store'
 import axios from 'axios'
-/* axios.defaults.withCredentials = true */
+// axios.defaults.withCredentials = true 
 
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>
