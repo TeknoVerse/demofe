@@ -126,7 +126,7 @@ const MasterWarehouseProduction = () => {
                         <form className='row ' onSubmit={addProduct}>
                           <span>Part Name : {selectProduct.part_name}  </span>
                           <span>Part Code : {selectProduct.part_no}  </span>
-                          <span>Qty : {selectProduct.qty}  </span>
+                          <span>Qty : {/* {selectProduct.qty}  */} ~ </span>
                           <hr className='mt-2' />
                           <div className="row ">
                               <label
@@ -138,7 +138,7 @@ const MasterWarehouseProduction = () => {
                               <div className="col-sm-8">
                                 <input
                                   type="number"
-                                  max={`${selectProduct.qty}`}
+                                 /*  max={`${selectProduct.qty}`} */
                                   min={'1'}
                                   className="form-control form-control-sm"
                                   id=""
@@ -176,7 +176,7 @@ const MasterWarehouseProduction = () => {
                                   <td>{index+1} </td>
                                   <td>{item.part_name} </td>
                                   <td>{item.part_no} </td>
-                                  <td>{item.qty} </td>
+                                  <td>{/* {item.qty} */} ~ </td>
                                   <td> <button onClick={() => handleSelectProduct(item)} className='btn btn-success text-white btn-sm'>Select</button> </td>
                                
                                 </tr>
