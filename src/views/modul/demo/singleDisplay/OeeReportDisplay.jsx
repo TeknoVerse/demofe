@@ -132,8 +132,7 @@ const OeeReportDisplay = () => {
     }
   };
 
-  const [errorInputMachine, setErrorInputMachine] = useState(null)
-  const [errorInputShiftId, setErrorInputShiftId] = useState(null)
+
 
   const handleMethodOee = async (e) => {
     e.preventDefault()

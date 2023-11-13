@@ -10,7 +10,6 @@ const MasterProduct = () => {
   const [editProduct, setEditProduct] = useState(false)
 
   const [search,setSearch] = useState('')
-  const [filter, setFilter] = useState([])
 
   useEffect(() => {
     const bagInterval = [];

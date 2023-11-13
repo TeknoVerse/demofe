@@ -23,7 +23,6 @@ const QrCode = () => {
   const [search,setSearch] = useState('')
 
 
-  const pdf = new jsPDF();
   const qrCodeRef = useRef(null);
   const refPartCode = useRef(null)
 
@@ -203,7 +202,6 @@ const QrCode = () => {
                     id=""
                     placeholder="Qty For Qr Code"
                   />
-               
                   </div>
                 </div>
               </div>

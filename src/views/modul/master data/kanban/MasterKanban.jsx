@@ -1,6 +1,5 @@
 import React, { Component, useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import jsPDF from 'jspdf';
 import { Typeahead } from 'react-bootstrap-typeahead';
 import {
   DataKanban,
@@ -10,10 +9,9 @@ import {
 } from 'src/config/GetDataApi';
 import { cilCheck, cilFilter, cilPencil, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
-import { getUrlKanban, getUrlSloc } from 'src/config/Api';
+import { getUrlKanban } from 'src/config/Api';
 import ReactToPrint from 'react-to-print';
 import axios from 'axios';
-import './cssPrintKanban.css';
 import PropTypes from 'prop-types';
 
 class PrintContent extends Component {
@@ -25,7 +23,6 @@ class PrintContent extends Component {
       currentAmount = amount;
     }
     const newData = [];
-
     for (let index = 0; index < currentAmount; index++) {
       newData.push(
         <div className="col-6">
@@ -87,11 +84,9 @@ const MasterKanban = () => {
   const [dataQrCode, setDataQrCode] = useState([]);
   const [profuctFiltered, setProductFiltered] = useState([]);
 
-  const [editQrCode, setEditQrCode] = useState(false);
-  const [dataFormQrCode, setDataFromQrCode] = useState([]);
+  
   const [search, setSearch] = useState('');
 
-  const pdf = new jsPDF();
   const refPartCode = useRef(null);
 
   const refForm = useRef(null);
@@ -170,12 +165,9 @@ const MasterKanban = () => {
     setKanbanById([]);
   };
 
-  const kanbanRef = useRef();
-  const qrCodeRef = useRef();
 
   const componentPrintRef = useRef();
 
-  const [mountPage, setMountPage] = useState();
 
   return (
     <div className="container-fluid body-kanban" style={{}}>
@@ -548,7 +540,6 @@ const MasterKanban = () => {
                 trigger={() => {
                   return (
                     <button
-                      onClick={() => setMountPage(4)}
                       className="btn btn-primary"
                     >
                       Print{' '}
