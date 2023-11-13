@@ -433,7 +433,6 @@ const Production = () => {
   };
 
   return (
-    <CCard className="mb-4 p-2">
       <div className="p-2 container-fluid">
         <div className="d-flex justify-">
           <div className="col-md-12 ">
@@ -1051,7 +1050,6 @@ const Production = () => {
         </div>
         {/* end modal Defect */}
       </div>
-    </CCard>
   );
 };
 

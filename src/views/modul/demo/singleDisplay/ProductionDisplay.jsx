@@ -13,7 +13,7 @@ const ProductionDisplay = () => {
     const intervalDataMachine = setInterval(() => {
        getDataMachine();
     }, 1000);
- 
+  
     const intervalAllDisplay = setInterval(() => {
       handleDisplayProduction();
     }, 1000);
