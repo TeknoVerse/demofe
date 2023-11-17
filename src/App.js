@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 
 //import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap/dist/js/bootstrap.bundle.js"
+
 import './scss/style.scss'
 import './scss/Mycss.scss'
 import ProductionDisplay from './views/modul/demo/singleDisplay/ProductionDisplay'

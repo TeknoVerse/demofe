@@ -103,12 +103,26 @@ const DataProductionDisplay = () => {
         category: currentDataMachine.category === e.code ? null : e.code,
       });
 
-      await axios.post(getUrlTtransStop, {
-        time: currentTime,
-        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code: e.category_code,
-        sub_category_code: e.code,
-      });
+
+      if(currentDataMachine.category){
+
+        await axios.post(getUrlTtransStop, {
+          options : 'end' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: e.category_code,
+          sub_category_code: e.code,
+        });
+      }else{
+        await axios.post(getUrlTtransStop, {
+          options : 'process' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: e.category_code,
+          sub_category_code: e.code,
+        });
+      }
+
     }
   };
 
@@ -127,12 +141,25 @@ const DataProductionDisplay = () => {
         category: currentDataMachine.category === e.code ? null : e.code,
       });
 
-      await axios.post(getUrlTtransStop, {
-        time: currentTime,
-        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code: e.category_code,
-        sub_category_code: e.code,
-      });
+  
+
+      if(currentDataMachine.category){
+        await axios.post(getUrlTtransStop, {
+          options : 'end' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: e.category_code,
+          sub_category_code: e.code,
+        });
+      }else{
+        await axios.post(getUrlTtransStop, {
+          options : 'process' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: e.category_code,
+          sub_category_code: e.code,
+        });
+      }
     }
   };
 
@@ -567,7 +594,7 @@ const DataProductionDisplay = () => {
                     />
                   </div>
                 </div>
-                <div className="row mb-3 justify-content-center">
+              {/*   <div className="row mb-3 justify-content-center">
                   <label className="col-sm-3 col-form-label"> QTY</label>
                   <div className="col-sm-6">
                     <input
@@ -585,10 +612,11 @@ const DataProductionDisplay = () => {
                       className="form-control form-control-sm"
                     />
                   </div>
-                </div>
+                </div> */}
                 <div className="text-center">
                   <button
                     type="submit"
+                    disabled={!formDandori.part_no}
                     className="btn btn-sm btn-success text-white"
                   >
                     Submit

@@ -8,7 +8,7 @@ import {
 import CIcon from '@coreui/icons-react';
 import { CCard } from '@coreui/react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Typeahead } from 'react-bootstrap-typeahead';
 
 import { Lampu_andon } from 'src/components/my component/MyIcon';
@@ -51,11 +51,7 @@ const Production = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const [displayModalAndon, setDisplayModalAndon] = useState({
-    yellow: false,
-    red: false,
-    defect : false
-  });
+ 
 
   const [dataTtransOperation, setDataTtransOperation] = useState([]);
 
@@ -128,27 +124,45 @@ const Production = () => {
   const handleLightYellow = async (e) => {
     e.preventDefault();
 
-    setDisplayModalAndon((prevData) => {
-      return { ...prevData, yellow: true, red: false };
-    });
+    new Promise (async (res,rej) => {
+      try {
+        if(!currentDataMachine.status_yellow ){
+          await axios.post(getUrlTtransStop, {
+            time: currentTime,
+            machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          });
+        }
+      } catch (error) {
+        rej(error)
+      }
+    })
 
-    const cekMachineCode = dataMachine.find((item) =>
-      process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
-    );
+    new Promise (async (res,rej) => {
+      try {
+  
+        const cekMachineCode = dataMachine.find((item) =>
+          process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
+        );
+    
+        if (cekMachineCode) {
+          await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
+            status_green: false,
+            status_yellow: true,
+            status_red: false,
+          });
+        }
+      } catch (error) {
+        rej(error)
+      }
+    })
 
-    if (cekMachineCode) {
-      await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
-        status_green: false,
-        status_yellow: true,
-        status_red: false,
-      });
-    }
+  
   };
+
+
   const handleDefect = async (e) => {
     e.preventDefault();
-    setDisplayModalAndon((prevData) => {
-      return { ...prevData, defect : true };
-    });
+   
 
     const cekMachineCode = dataMachine.find((item) =>
       process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
@@ -166,14 +180,26 @@ const Production = () => {
 
   const handleLightRed = async (e) => {
     e.preventDefault();
-    setDisplayModalAndon((prevData) => {
-      return { ...prevData, red: true, yellow: false };
-    });
 
-    const cekMachineCode = dataMachine.find((item) =>
-      process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
-    );
+    new Promise(async (res,rej) => {
+    try {
+      if(!currentDataMachine.status_red ){
+        await axios.post(getUrlTtransStop, {
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        });
+      }
+    } catch (error) {
+      rej(error)
+    }
 
+    })
+    new Promise(async (res,rej) => {
+try {
+
+  const cekMachineCode = dataMachine.find((item) =>
+    process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
+  );
     if (cekMachineCode) {
       await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
         status_green: false,
@@ -181,6 +207,15 @@ const Production = () => {
         status_red: true,
       });
     }
+   
+} catch (error) {
+  rej(error)
+}
+    })
+   
+
+    
+  
   };
 
   const getDataTtrasOperation = async () => {
@@ -276,97 +311,163 @@ const Production = () => {
     }
   };
 
+  const modalRef = useRef(null);
+
   const handleFormDandori = async (e) => {
     e.preventDefault();
 
     try {
-      if (currentDataMachine.length !== 0) {
-        await axios.patch(
-          `${getUrlMachine}?id=${currentDataMachine.id}`,
-          formDandori,
-        );
-        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-          status_green: true,
-          status_yellow: false,
-          status_red: false,
-        });
-        setFormDandori((prevData) => {
-          return { ...prevData, status: false };
-        });
-      } else {
+      
+/*       if (currentDataMachine.length !== 0) { */
+new Promise(async(resolve, reject) => {
+  await axios.patch(
+    `${getUrlMachine}?id=${currentDataMachine.id}`,
+    formDandori,
+  );
+
+})
+setFormDandori((prevData) => {
+  return { ...prevData,    status: !prevData.status, };
+});
+          
+    /*   } else {
         const DataStatus = { ...formDandori, status_green: true };
         await axios.post(`${getUrlMachine}`, DataStatus);
-      }
+      } */
+ 
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleCloseModalAndon = async (e) => {
-    e.preventDefault();
+    await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+      status_green: true,
+      status_yellow: false,
+      status_red: false,
+      defect: false,
+    });  
 
-    setDisplayModalAndon([])
-    const cekMachineCode = dataMachine.find((item) =>
-      process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
-    );
-
-    if (cekMachineCode.length !== 0) {
-      await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
-        status_green: true,
-        status_yellow: false,
-        status_red: false,
-        defect: false,
-      });
-    }
   };
 
   const handleProblemNonMachine = async (e) => {
     if (currentDataMachine) {
-      await axios.patch(
-        `${getUrlMachine}?code=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`,
-        {
-          status_green: false,
-          status_yellow: true,
-          status_red: false,
-        },
-      );
 
-      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-        category: currentDataMachine.category === e.code ? null : e.code,
-      });
+      new Promise (async() => {
+        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+          category: currentDataMachine.category === e.code ? null : e.code,
+        });
+      })
 
-      await axios.post(getUrlTtransStop, {
-        time: currentTime,
-        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code: e.category_code,
-        sub_category_code: e.code,
-      });
+      new Promise (async() => {
+        if(currentDataMachine.category){
+          await axios.post(getUrlTtransStop, {
+            options : 'end' ,
+            time: currentTime,
+            machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+            category_code: e.category_code,
+            sub_category_code: e.code,
+          });
+        }else{
+          await axios.post(getUrlTtransStop, {
+            options : 'process' ,
+            time: currentTime,
+            machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+            category_code: e.category_code,
+            sub_category_code: e.code,
+          });
+        }
+      })
+
+    
+
+  
+
+    
+
     }
   };
 
   const handleProblemMachine = async (e) => {
     if (currentDataMachine) {
-      await axios.patch(
-        `${getUrlMachine}?code=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`,
-        {
-          status_green: false,
-          status_yellow: false,
-          status_red: true,
-        },
-      );
+   
 
+
+     new Promise (async() => {
       await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
         category: currentDataMachine.category === e.code ? null : e.code,
       });
-
-      await axios.post(getUrlTtransStop, {
-        time: currentTime,
-        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        category_code: e.category_code,
-        sub_category_code: e.code,
-      });
+     })
+     new Promise (async() => {
+      if(currentDataMachine.category){
+        await axios.post(getUrlTtransStop, {
+          options : 'end' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: e.category_code,
+          sub_category_code: e.code,
+        });
+      }else{
+        await axios.post(getUrlTtransStop, {
+          
+          options : 'process' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: e.category_code,
+          sub_category_code: e.code,
+        });
+      }
+     })
     }
   };
+
+  const handleButtonDandori = async () => {
+
+    new Promise (async() => {
+      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+        category: currentDataMachine.category === "DNDP1" ? null : "DNDP1",
+      });
+     })
+
+
+     new Promise (async() => {
+      if(currentDataMachine.category){
+        await axios.post(getUrlTtransStop, {
+          options : 'end' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: 'DND',
+          sub_category_code: "DNDP1",
+        });
+     /*    setFormDandori((prevData) => {
+          return {
+            ...prevData,
+            status: false,
+          };
+        }) */
+      }else{
+   
+       /*  setFormDandori((prevData) => {
+          return {
+            ...prevData,
+            status: true,
+          };
+        }) */
+    
+        await axios.post(getUrlTtransStop, {
+          
+          options : 'process' ,
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: 'DND',
+          sub_category_code: "DNDP1",
+        });
+
+      }
+     })
+
+
+  }
 
   const handleDisplayProduction = async () => {
     try {
@@ -431,6 +532,7 @@ const Production = () => {
       });
     }
   };
+
 
   return (
       <div className="p-2 container-fluid">
@@ -611,11 +713,12 @@ const Production = () => {
             <div className="modal-content  ">
               <div className="modal-header">
                 <h1 className="modal-title fs-5" id="modalButtonAndonLabel">
-                  {displayModalAndon.yellow
+                  {currentDataMachine.status_yellow
                     ? 'Problem Non Machine'
-                    : displayModalAndon.red && 'Problem Machine'}
+                    : currentDataMachine.status_red && 'Problem Machine'}
                 </h1>
                 <button
+                id='closeButton'
                   type="button"
                   disabled={currentDataMachine.category !== null}
                   onClick={handleCloseModalAndon}
@@ -629,7 +732,7 @@ const Production = () => {
                   {/*  */}
                   <div
                     className={` ${
-                      !displayModalAndon.yellow && 'd-none'
+                      !currentDataMachine.status_yellow && 'd-none'
                     } col-md-12 rounded  p-1   `}
                   >
                     <div className=" col-md-12">
@@ -638,14 +741,9 @@ const Production = () => {
                           <div className="row text-white p-0 g-2">
                             <div className="col-6  ">
                               <button
-                                disabled={currentDataMachine.category}
-                                onClick={() =>
-                                  setFormDandori((prevData) => {
-                                    return {
-                                      ...prevData,
-                                      status: !prevData.status,
-                                    };
-                                  })
+                                disabled={currentDataMachine.category && currentDataMachine.category !== 'DNDP1'}
+                                onClick={() => handleButtonDandori()
+                                
                                 }
                                 className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
                               >
@@ -677,7 +775,7 @@ const Production = () => {
 
                             <div
                               className={` mt-4 col-12 ${
-                                formDandori.status === false && 'd-none'
+                                currentDataMachine.category !== "DNDP1" && 'd-none'
                               } `}
                             >
                               <form
@@ -786,7 +884,7 @@ const Production = () => {
                                     />
                                   </div>
                                 </div>
-                                <div className="row mb-3 justify-content-center">
+                            {/*     <div className="row mb-3 justify-content-center">
                                   <label className="col-sm-3 col-form-label">
                                     {' '}
                                     QTY
@@ -809,7 +907,7 @@ const Production = () => {
                                       className="form-control form-control-sm"
                                     />
                                   </div>
-                                </div>
+                                </div> */}
 
                                 <div className="text-center">
                                   <button
@@ -828,7 +926,7 @@ const Production = () => {
                   </div>
                   <div
                     className={` ${
-                      !displayModalAndon.red && 'd-none'
+                      !currentDataMachine.status_red && 'd-none'
                     } col-md-12 rounded  p-1   `}
                   >
                     <div className=" col-md-12">
@@ -839,7 +937,7 @@ const Production = () => {
                               <div
                                 key={index}
                                 className={` col-6  ${
-                                  formDandori.status === true && 'd-none'
+                                  currentDataMachine.category === "DNDP1" && 'd-none'
                                 } `}
                               >
                                 <button
@@ -862,7 +960,7 @@ const Production = () => {
                     </div>
                   </div>
                   <div       className={` ${
-                      !displayModalAndon.defect  && 'd-none'
+                      !currentDataMachine.defect  && 'd-none'
                     } col-md-12 rounded  p-2   `}>
                   <div className="row">
                     <div className="col-6  p-0 ">
