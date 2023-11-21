@@ -137,9 +137,12 @@ const Production = () => {
       }
     })
 
+
+
+  
+
     new Promise (async (res,rej) => {
       try {
-  
         const cekMachineCode = dataMachine.find((item) =>
           process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
         );
@@ -207,17 +210,16 @@ try {
         status_red: true,
       });
     }
+
+
+    
    
 } catch (error) {
   rej(error)
 }
     })
-   
-
-    
   
   };
-
   const getDataTtrasOperation = async () => {
     try {
       const response = await axios.get(getUrlTtransOperation);
