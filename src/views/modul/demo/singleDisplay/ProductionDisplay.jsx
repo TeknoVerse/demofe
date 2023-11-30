@@ -70,6 +70,16 @@ const ProductionDisplay = () => {
           getData.dandorishift2 +
           getData.dandorishift3 
           );
+        setTotalProblemMachne(getData && 
+          getData.problem_machine_1 +
+          getData.problem_machine_2 +
+          getData.problem_machine_3 
+          );
+        setTotalProblemNonMachine(getData && 
+          getData.problem_non_machine_1 +
+          getData.problem_non_machine_2 +
+          getData.problem_non_machine_3
+          );
       } catch (error) {
         reject(error)
       }
@@ -149,9 +159,9 @@ const ProductionDisplay = () => {
               <hr className="mt-2 " style={{border: '1px solid yellow', opacity: '.6'}} />
               <div className="col-md-12" style={{ fontSize: '12px' }}>
                 <div className="row">
-                  <span className='ms-auto'>Dandori (minutes) : {totalDandori/60}</span>
-                  <span className='ms-auto'>Problem Machine (minutes) :</span>
-                  <span>Problem Non Machine (minutes) :</span>
+                  <span className='ms-auto'>Dandori (minutes) : {(totalDandori/60).toFixed(2)}</span>
+                  <span className='ms-auto'>Problem Machine (minutes) : {(totalProblemMachine/60).toFixed(2)} </span>
+                  <span>Problem Non Machine (minutes) : {(totalProblemNonMachine/60).toFixed(2)}</span>
                 </div>
               </div>
             </div>
