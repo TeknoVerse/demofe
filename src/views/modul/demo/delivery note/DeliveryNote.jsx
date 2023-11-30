@@ -28,9 +28,8 @@ const DeliveryNote = () => {
     try {
       const response = await axios.get(getUrlDn)
       const data = response.data
-      
- 
-      const aggregatedData = {};
+  
+      let aggregatedData = {};
 
       data.forEach(item => {
         if (!aggregatedData[item.field_1]) {
@@ -50,6 +49,7 @@ const DeliveryNote = () => {
           }
         }
       });
+      console.log(aggregatedData)
     
       setDataDn(Object.values(aggregatedData))
     } catch (error) {
@@ -58,17 +58,14 @@ const DeliveryNote = () => {
   }
 
   
-
-
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (file) {
-      const formData = new FormData();
+      const formData = new FormData()
       formData.append('file', file);
 
       try {
-        const response = await axios.post(getUrlDn, formData, {
+        await axios.post(getUrlDn, formData, {
           headers: {
             "Content-Type" : 'multipart/form-data',
           },

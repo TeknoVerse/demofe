@@ -89,31 +89,26 @@ const DataProductionDisplay = () => {
   };
 
   const handleProblemNonMachine = async (e) => {
-    if (currentDataMachine) {
-      await axios.patch(
-        `${getUrlMachine}?code=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`,
-        {
-          status_green: false,
-          status_yellow: true,
-          status_red: false,
-        },
-      );
 
+      if(currentDataMachine.category !== null){    
+        
       await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-        category: currentDataMachine.category === e.code ? null : e.code,
+        category: null 
       });
-
-
-      if(currentDataMachine.category){
-
+        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+          status_green: true,
+          status_yellow: false,
+          status_red: false,
+        });
         await axios.post(getUrlTtransStop, {
           options : 'end' ,
           time: currentTime,
           machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          category_code: e.category_code,
-          sub_category_code: e.code,
         });
       }else{
+        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+          category: e.code 
+        });
         await axios.post(getUrlTtransStop, {
           options : 'process' ,
           time: currentTime,
@@ -123,50 +118,55 @@ const DataProductionDisplay = () => {
         });
       }
 
-    }
+    
+  return
+
   };
 
   const handleProblemMachine = async (e) => {
     if (currentDataMachine) {
-      await axios.patch(
-        `${getUrlMachine}?code=${process.env.REACT_APP_DEFAULT_MACHINE_CODE}`,
-        {
-          status_green: false,
-          status_yellow: false,
-          status_red: true,
-        },
-      );
-
-      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-        category: currentDataMachine.category === e.code ? null : e.code,
-      });
-
   
-
-      if(currentDataMachine.category){
-        await axios.post(getUrlTtransStop, {
-          options : 'end' ,
-          time: currentTime,
-          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          category_code: e.category_code,
-          sub_category_code: e.code,
-        });
-      }else{
-        await axios.post(getUrlTtransStop, {
-          options : 'process' ,
-          time: currentTime,
-          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          category_code: e.category_code,
-          sub_category_code: e.code,
-        });
-      }
+    if(currentDataMachine.category !== null){
+      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+        status_green: true,
+        status_yellow: false,
+        status_red: false,
+      });
+      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+        category: null 
+      });
+    
+      await axios.post(getUrlTtransStop, {
+        options : 'end' ,
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+      });
+    }else{
+      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+        category: e.code 
+      });
+      await axios.post(getUrlTtransStop, {
+        options : 'process' ,
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        category_code: e.category_code,
+        sub_category_code: e.code,
+      });
     }
+
+  }
+  return
   };
 
   const handleFormDandori = async (e) => {
-    e.preventDefault();
+    
 
     try {
+      new Promise(async(resolve, reject) => {
+        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+          category: null ,
+          });
+      })
       if (currentDataMachine.length !== 0) {
         await axios.patch(
           `${getUrlMachine}?id=${currentDataMachine.id}`,
@@ -177,9 +177,18 @@ const DataProductionDisplay = () => {
           status_yellow: false,
           status_red: false,
         });
+      
         setFormDandori((prevData) => {
           return { ...prevData, status: false };
         });
+        await axios.post(getUrlTtransStop, {
+          options: 'process',
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          category_code: 'DND',
+          sub_category_code: 'DNDP1',
+        });
+        
       } else {
         const DataStatus = { ...formDandori, status_green: true };
         await axios.post(`${getUrlMachine}`, DataStatus);
@@ -204,7 +213,7 @@ const DataProductionDisplay = () => {
   const getTmastDefect = DataMasterDefect({ machine_group: null });
 
   const handleFormDefect = async (e) => {
-    e.preventDefault();
+    
     if (dataFormDefect.defect.length === 0) {
       console.log('kosong');
     } else {
@@ -220,6 +229,44 @@ const DataProductionDisplay = () => {
         category_code: dataFormDefect.defect.code,
       });
     }
+  };
+
+  const handleButtonDandori = async () => {
+  
+    setFormDandori((prevData) => {
+      return { ...prevData, status: !prevData.status };
+    })
+
+    new Promise(async() => {      
+     await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+      category: currentDataMachine.category === 'DNDP1' ? null : 'DNDP1',
+      });
+    })
+
+    if (currentDataMachine.category !== null) {
+      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+        status_green: true,
+        status_yellow: false,
+        status_red: false,
+        defect: false,
+      });
+      await axios.post(getUrlTtransStop, {
+        options: 'end',
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+      });
+    
+    } else {
+      await axios.post(getUrlTtransStop, {
+        options: 'process',
+        time: currentTime,
+        machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        category_code: 'DND',
+        sub_category_code: 'DNDP1',
+      });
+    }
+  
+   
   };
 
   return (
@@ -422,11 +469,11 @@ const DataProductionDisplay = () => {
           >
             <div className="col-6  ">
               <button
-                disabled={currentDataMachine.category}
-                onClick={() =>
-                  setFormDandori((prevData) => {
-                    return { ...prevData, status: !prevData.status };
-                  })
+                disabled={currentDataMachine.category &&
+                  currentDataMachine.category !== 'DNDP1'}
+
+                onClick={
+                 handleButtonDandori
                 }
                 className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
               >
@@ -438,7 +485,7 @@ const DataProductionDisplay = () => {
               <div
                 key={index}
                 className={` col-6  ${
-                  formDandori.status === true && 'd-none'
+                  currentDataMachine.category === 'DNDP1' && 'd-none'
                 } `}
               >
                 <button
@@ -507,7 +554,7 @@ const DataProductionDisplay = () => {
 
             <div
               className={` mt-4 col-12 ${
-                formDandori.status === false && 'd-none'
+                currentDataMachine.category !== 'DNDP1' && 'd-none'
               } `}
             >
               <form
@@ -588,7 +635,7 @@ const DataProductionDisplay = () => {
                   <div className="col-sm-6">
                     <input
                       type="text"
-                      value={formDandori.ct ? formDandori.ct : ''}
+                      value={formDandori.ct ? formDandori.ct /1000 : ''}
                       disabled
                       className="form-control form-control-sm"
                     />

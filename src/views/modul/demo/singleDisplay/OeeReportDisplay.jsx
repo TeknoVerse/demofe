@@ -64,6 +64,10 @@ const OeeReportDisplay = () => {
   const [currentOee, setCurrentOee] = useState([]);
   const [dataMachine, setDataMachine] = useState([]);
   const [dataShift, setDataShift] = useState([]);
+  const [oee,setOee] = useState('')
+  const [avaibility,setAvaibility] = useState('')
+  const [performance,setPerformance] = useState('')
+  const [quality,setQuality] = useState('')
 
   /* Start Ref */
   const refMachine = useRef(null);
@@ -82,13 +86,16 @@ const OeeReportDisplay = () => {
     const intervalTmasttSHift = setInterval(() => {
       getDataShift();
     }, 1000);
-    bagInterval.push(intervalTmastMachine, intervalTmasttSHift);
+    const intervalOee = setInterval(() => {
+      realTimeOee(dataFormOee)
+    }, 1000);
+    bagInterval.push(intervalTmastMachine, intervalTmasttSHift,intervalOee);
     return () => {
       bagInterval.forEach((data) => {
         clearInterval(data);
       });
     };
-  });
+  }, []);
 
   const getDataMachine = async () => {
     try {
@@ -133,6 +140,41 @@ const OeeReportDisplay = () => {
   };
 
 
+  const realTimeOee = async (data) => {
+    if(data  ){
+    console.log(data)
+      
+    const response = await axios.post(getUrlTworkOee, {
+      machine_no : data.machine_no,
+      shift_id : data.shift_id,
+      date : data.date
+    })
+    const curretnData = response.data
+
+    console.log(curretnData)
+    if(curretnData){
+
+
+    if(curretnData.oee !== oee){
+      setOee(curretnData.oee)
+    }
+    if(curretnData.avaibility !== avaibility){
+      setAvaibility(curretnData.avaibility)
+      
+    }
+    if(curretnData.performance !== performance){
+      setPerformance(curretnData.performance)
+      
+    }
+    if(curretnData.quality !== quality){
+      setQuality(curretnData.quality)
+      
+    }
+  }
+
+  }
+  }
+
 
   const handleMethodOee = async (e) => {
     e.preventDefault()
@@ -143,17 +185,13 @@ const OeeReportDisplay = () => {
         refShift.current.clear()
         refMachine.current.clear()
 
-        const response = await axios.post(getUrlTworkOee, {
-          machine_no : dataFormOee.machine_no,
-          shift_id : dataFormOee.shift_id,
-          date : dataFormOee.date
-        })
-
+        realTimeOee(dataFormOee)
+        setFirstView(false)
         
-          if(response){
-            setCurrentOee(response.data)
-            setFirstView(false)
-          }
+        /*   if(curretnData){
+         //   setCurrentOee(response.data)
+
+          } */
       }
     
 
@@ -232,27 +270,28 @@ const OeeReportDisplay = () => {
       </div>
 
       <div className={` ${firstView === true && 'd-none'} d-flex align-items-center   justify-content-center`}>
-        <MyGaugeChart
+      <MyGaugeChart
           width={200}
-          value={currentOee && currentOee.oee}
+          value={oee && oee}
           title={'OEE'}
           fs={1}
         />
+        
         <MyGaugeChart
           width={200}
-          value={currentOee && currentOee.avaibility}
+          value={avaibility && avaibility}
           title={'AVAILABILITY'}
           fs={1}
         />
         <MyGaugeChart
           width={200}
-          value={currentOee && currentOee.performance}
+          value={performance && performance}
           title={'PERFORMANCE'}
           fs={1}
         />
         <MyGaugeChart
           width={200}
-          value={currentOee && currentOee.quality}
+          value={quality && quality}
           title={'QUALIY'}
           fs={1}
         />

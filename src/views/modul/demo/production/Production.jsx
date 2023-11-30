@@ -51,8 +51,6 @@ const Production = () => {
 
   const [loading, setLoading] = useState(true);
 
- 
-
   const [dataTtransOperation, setDataTtransOperation] = useState([]);
 
   const [dataPlanning, setDataPlanning] = useState(0);
@@ -123,49 +121,28 @@ const Production = () => {
 
   const handleLightYellow = async (e) => {
     e.preventDefault();
+ 
 
-    new Promise (async (res,rej) => {
-      try {
-        if(!currentDataMachine.status_yellow ){
-          await axios.post(getUrlTtransStop, {
-            time: currentTime,
-            machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          });
-        }
-      } catch (error) {
-        rej(error)
-      }
-    })
-
-
-
-  
-
-    new Promise (async (res,rej) => {
-      try {
-        const cekMachineCode = dataMachine.find((item) =>
-          process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
-        );
-    
-        if (cekMachineCode) {
-          await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
+        if (currentDataMachine.length !== 0) {  
+          await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
             status_green: false,
             status_yellow: true,
             status_red: false,
           });
+          if (currentDataMachine.status_yellow === false) {
+            await axios.post(getUrlTtransStop, {
+              time: currentTime,
+              machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+            });
+         
+          }
+       
         }
-      } catch (error) {
-        rej(error)
-      }
-    })
-
-  
+   
   };
-
 
   const handleDefect = async (e) => {
     e.preventDefault();
-   
 
     const cekMachineCode = dataMachine.find((item) =>
       process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
@@ -181,44 +158,37 @@ const Production = () => {
     }
   };
 
-  const handleLightRed = async (e) => {
+  const  handleLightRed = async (e) => {
     e.preventDefault();
 
-    new Promise(async (res,rej) => {
-    try {
-      if(!currentDataMachine.status_red ){
-        await axios.post(getUrlTtransStop, {
-          time: currentTime,
-          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-        });
+    new Promise(async (res, rej) => {
+      try {
+        if (!currentDataMachine.status_red) {
+          await axios.post(getUrlTtransStop, {
+            time: currentTime,
+            machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+          });
+        }
+      } catch (error) {
+        rej(error);
       }
-    } catch (error) {
-      rej(error)
-    }
-
-    })
-    new Promise(async (res,rej) => {
-try {
-
-  const cekMachineCode = dataMachine.find((item) =>
-    process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
-  );
-    if (cekMachineCode) {
-      await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
-        status_green: false,
-        status_yellow: false,
-        status_red: true,
-      });
-    }
-
-
-    
-   
-} catch (error) {
-  rej(error)
-}
-    })
-  
+    });
+    new Promise(async (res, rej) => {
+      try {
+        const cekMachineCode = dataMachine.find((item) =>
+          process.env.REACT_APP_DEFAULT_MACHINE_CODE.includes(item.code),
+        );
+        if (cekMachineCode) {
+          await axios.patch(`${getUrlMachine}?id=${cekMachineCode.id}`, {
+            status_green: false,
+            status_yellow: false,
+            status_red: true,
+          });
+        }
+      } catch (error) {
+        rej(error);
+      }
+    });
   };
   const getDataTtrasOperation = async () => {
     try {
@@ -316,160 +286,132 @@ try {
   const modalRef = useRef(null);
 
   const handleFormDandori = async (e) => {
-    e.preventDefault();
-
+e.preventDefault()
     try {
-      
-/*       if (currentDataMachine.length !== 0) { */
-new Promise(async(resolve, reject) => {
-  await axios.patch(
-    `${getUrlMachine}?id=${currentDataMachine.id}`,
-    formDandori,
-  );
-
-})
-setFormDandori((prevData) => {
-  return { ...prevData,    status: !prevData.status, };
-});
+      if (currentDataMachine.category.length === 0 ) {
+        await axios.post(getUrlTtransStop, {
+          options: 'end',
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        });
+      }else{
           
-    /*   } else {
-        const DataStatus = { ...formDandori, status_green: true };
-        await axios.post(`${getUrlMachine}`, DataStatus);
-      } */
- 
+        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+          category: currentDataMachine.category === 'DNDP1' ? null : 'DNDP1',
+        });
+        await axios.patch(
+          `${getUrlMachine}?id=${currentDataMachine.id}`,
+          formDandori,
+        );
+     
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleCloseModalAndon = async (e) => {
-    await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-      status_green: true,
-      status_yellow: false,
-      status_red: false,
-      defect: false,
-    });  
-
+    new Promise(async(resolve, reject) => {
+      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+        status_green: true,
+        status_yellow: false,
+        status_red: false,
+        defect: false,
+      }).then((data) => resolve(data))
+    })
+    
   };
 
   const handleProblemNonMachine = async (e) => {
+    try {
     if (currentDataMachine) {
+      
 
-      new Promise (async() => {
-        await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-          category: currentDataMachine.category === e.code ? null : e.code,
-        });
-      })
+        new Promise(async(resolve, reject) => {
+          await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+            category: currentDataMachine.category === e.code ? null : e.code,
+          }).then(async() => {
 
-      new Promise (async() => {
-        if(currentDataMachine.category){
-          await axios.post(getUrlTtransStop, {
-            options : 'end' ,
+            if (currentDataMachine.category) {
+              await axios.post(getUrlTtransStop, {
+                options: 'end',
+                time: currentTime,
+                machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+                category_code: e.category_code,
+                sub_category_code: e.code,
+              });
+            } else {
+              await axios.post(getUrlTtransStop, {
+                options: 'process',
+                time: currentTime,
+                machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+                category_code: e.category_code,
+                sub_category_code: e.code,
+              });
+            }
+          })
+        })
+
+    }
+  } catch (error) {
+   console.log(error)   
+  }
+  };
+
+  const handleProblemMachine = async (e) => {
+    if (currentDataMachine) {
+      
+        if (currentDataMachine.category) {
+          await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+            category:  null 
+          });
+          return  await axios.post(getUrlTtransStop, {
+            options: 'end',
             time: currentTime,
             machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
             category_code: e.category_code,
             sub_category_code: e.code,
           });
-        }else{
-          await axios.post(getUrlTtransStop, {
-            options : 'process' ,
+        } else {
+          await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+            category:  e.code,
+          });
+          return await axios.post(getUrlTtransStop, {
+            options: 'process',
             time: currentTime,
             machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
             category_code: e.category_code,
             sub_category_code: e.code,
           });
         }
-      })
-
-    
-
-  
-
-    
-
-    }
-  };
-
-  const handleProblemMachine = async (e) => {
-    if (currentDataMachine) {
-   
-
-
-     new Promise (async() => {
-      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-        category: currentDataMachine.category === e.code ? null : e.code,
-      });
-     })
-     new Promise (async() => {
-      if(currentDataMachine.category){
-        await axios.post(getUrlTtransStop, {
-          options : 'end' ,
-          time: currentTime,
-          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          category_code: e.category_code,
-          sub_category_code: e.code,
-        });
-      }else{
-        await axios.post(getUrlTtransStop, {
-          
-          options : 'process' ,
-          time: currentTime,
-          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          category_code: e.category_code,
-          sub_category_code: e.code,
-        });
-      }
-     })
+        
     }
   };
 
   const handleButtonDandori = async () => {
+  
+     await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
+      category: currentDataMachine.category === 'DNDP1' ? null : 'DNDP1',
+      })
 
-    new Promise (async() => {
-      await axios.patch(`${getUrlMachine}?id=${currentDataMachine.id}`, {
-        category: currentDataMachine.category === "DNDP1" ? null : "DNDP1",
-      });
-     })
-
-
-     new Promise (async() => {
-      if(currentDataMachine.category){
+      if (currentDataMachine.category !== null) {
         await axios.post(getUrlTtransStop, {
-          options : 'end' ,
+          options: 'end',
+          time: currentTime,
+          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
+        });
+      } else {
+        await axios.post(getUrlTtransStop, {
+          options: 'process',
           time: currentTime,
           machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
           category_code: 'DND',
-          sub_category_code: "DNDP1",
+          sub_category_code: 'DNDP1',
         });
-     /*    setFormDandori((prevData) => {
-          return {
-            ...prevData,
-            status: false,
-          };
-        }) */
-      }else{
-   
-       /*  setFormDandori((prevData) => {
-          return {
-            ...prevData,
-            status: true,
-          };
-        }) */
-    
-        await axios.post(getUrlTtransStop, {
-          
-          options : 'process' ,
-          time: currentTime,
-          machine_no: process.env.REACT_APP_DEFAULT_MACHINE_CODE,
-          category_code: 'DND',
-          sub_category_code: "DNDP1",
-        });
-
       }
-     })
-
-
-  }
+    
+   
+  };
 
   const handleDisplayProduction = async () => {
     try {
@@ -535,163 +477,159 @@ setFormDandori((prevData) => {
     }
   };
 
-
   return (
-      <div className="p-2 container-fluid">
-        <div className="d-flex justify-">
+    <div className="p-2 container-fluid">
+      <div className="d-flex justify-">
+        <div className="col-md-12 ">
           <div className="col-md-12 ">
-            <div className="col-md-12 ">
-              <div className="form-check form-switch">
-                <input
-                  disabled={loading}
-                  onChange={handleMachine}
-                  className="form-check-input"
-                  type="checkbox"
-                  role="switch"
-                  id="flexSwitchCheckChecked"
-                  checked={checked === true}
+            <div className="form-check form-switch">
+              <input
+                disabled={loading}
+                onChange={handleMachine}
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="flexSwitchCheckChecked"
+                checked={checked === true}
+              />
+              <label className="form-check-label">
+                {machine.status && machine.status === 'on'
+                  ? 'Mesin On'
+                  : 'Mesin Off'}
+              </label>
+            </div>
+          </div>
+          <div className="row mt-3  justify-content-center ">
+            <div className="col-md-5 d-flex mb-4  align-items-center justify-content-center  ">
+              <div className="mx-5">
+                <Lampu_andon
+                  extra={10}
+                  green={currentDataMachine.status_green}
+                  yellow={currentDataMachine.status_yellow}
+                  red={currentDataMachine.status_red}
                 />
-                <label className="form-check-label">
-                  {machine.status && machine.status === 'on'
-                    ? 'Mesin On'
-                    : 'Mesin Off'}
-                </label>
+              </div>
+              <div className="g-2 row col-md-6  pt-0 ms-2">
+                <div className="">
+                  <button
+                    disabled={
+                      machine.status !== 'on' ||
+                      currentDataMachine.status_green !== true
+                    }
+                    onClick={handleDefect}
+                    className="btn  btn-sm text-white fw-bold col-12 bg-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalButtonAndon"
+                  >
+                    Product Defect
+                  </button>
+                </div>
+                <hr style={{ border: '2px solid black' }} className=" mb-0" />
+                <div className="">
+                  <button
+                    disabled={
+                      machine.status !== 'on' ||
+                      currentDataMachine.status_green !== true
+                    }
+                    className="btn  btn-sm text-white fw-bold col-12 btn-secondary"
+                    onClick={handleDataOutput}
+                  >
+                    Output Product
+                  </button>
+                </div>
+                <div className="  ">
+                  <button
+                    disabled={machine.status !== 'on'}
+                    onClick={handleLightYellow}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalButtonAndon"
+                    className="btn btn-sm text-white fw-bold col-12 btn-warning"
+                  >
+                    Problem Non Machine
+                  </button>
+                </div>
+                <div className="  ">
+                  <button
+                    disabled={
+                      machine.status !== 'on' || currentDataMachine.length === 0
+                    }
+                    onClick={handleLightRed}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalButtonAndon"
+                    className="btn btn-sm text-white fw-bold col-12  btn-danger"
+                  >
+                    Problem Machine
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="row mt-3  justify-content-center ">
-              <div className="col-md-5 d-flex mb-4  align-items-center justify-content-center  ">
-                <div className="mx-5">
-                  <Lampu_andon
-                    extra={10}
-                    green={currentDataMachine.status_green}
-                    yellow={currentDataMachine.status_yellow}
-                    red={currentDataMachine.status_red}
-                  />
+            <div className="col-md-1 d-flex justify-content-center align-items-center">
+              <div
+                style={{ width: '3px', height: '100%', background: 'black' }}
+              ></div>
+            </div>
+            <div className="col-md-5">
+              <div
+                style={{ background: 'black', color: 'yellow' }}
+                className="row  p-2 rounded "
+              >
+                <div className="text-center fw-bold">
+                  <span>Line Assy</span>
                 </div>
-                <div className="g-2 row col-md-6  pt-0 ms-2">
-                  <div className="">
-                    <button
-                      disabled={
-                        machine.status !== 'on' ||
-                        currentDataMachine.status_green !== true
-                        
-                      }
-                      onClick={handleDefect}
-                      className="btn  btn-sm text-white fw-bold col-12 bg-danger"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalButtonAndon"
-                    >
-                      Product Defect
-                    </button>
-                  </div>
-                  <hr style={{ border: '2px solid black' }} className=" mb-0" />
-                  <div className="">
-                    <button
-                      disabled={
-                        machine.status !== 'on' ||
-                        currentDataMachine.status_green !== true
-                      }
-                      className="btn  btn-sm text-white fw-bold col-12 btn-secondary"
-                      onClick={handleDataOutput}
-                    >
-                      Output Product
-                    </button>
-                  </div>
-                  <div className="  ">
-                    <button
-                      disabled={machine.status !== 'on'}
-                      onClick={handleLightYellow}
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalButtonAndon"
-                      className="btn btn-sm text-white fw-bold col-12 btn-warning"
-                    >
-                      Problem Non Machine
-                    </button>
-                  </div>
-                  <div className="  ">
-                    <button
-                      disabled={
-                        machine.status !== 'on' ||
-                        currentDataMachine.length === 0
-                      }
-                      onClick={handleLightRed}
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalButtonAndon"
-                      className="btn btn-sm text-white fw-bold col-12  btn-danger"
-                    >
-                      Problem Machine
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-1 d-flex justify-content-center align-items-center">
-                <div
-                  style={{ width: '3px', height: '100%', background: 'black' }}
-                ></div>
-              </div>
-              <div className="col-md-5">
-                <div
-                  style={{ background: 'black', color: 'yellow' }}
-                  className="row  p-2 rounded "
-                >
-                  <div className="text-center fw-bold">
-                    <span>Line Assy</span>
-                  </div>
-                  <div className="col-md-12 mb-3">
-                    <div className="row">
-                      <span>Target : 1.200</span>
-                      <span>Plan : {dataPlanning}</span>
-                      <span>Actual : {actual} </span>
-                      <span>Belance : {dataPlanning - actual} </span>
-                      <span>
-                        Performance (%) :{' '}
-                        {((actual / dataPlanning) * 100).toFixed(2)} %
-                      </span>
-                      <hr className="my-3 " />
-                      <div className="col-md-12" style={{ fontSize: '12px' }}>
-                        <div className="row">
-                          <span>Dandori (minutes) :</span>
-                          <span>Problem Machine (minutes) :</span>
-                          <span>Problem Non Machine (minutes) :</span>
-                        </div>
+                <div className="col-md-12 mb-3">
+                  <div className="row">
+                    <span>Target : 1.200</span>
+                    <span>Plan : {dataPlanning}</span>
+                    <span>Actual : {actual} </span>
+                    <span>Belance : {dataPlanning - actual} </span>
+                    <span>
+                      Performance (%) :{' '}
+                      {((actual / dataPlanning) * 100).toFixed(2)} %
+                    </span>
+                    <hr className="my-3 " />
+                    <div className="col-md-12" style={{ fontSize: '12px' }}>
+                      <div className="row">
+                        <span>Dandori (minutes) :</span>
+                        <span>Problem Machine (minutes) :</span>
+                        <span>Problem Non Machine (minutes) :</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="col-md-12 ">
-                <div className="row g-3 p-0">
-                  <div className="col-md-12   p-1 ">
-                    <div
-                      style={{ background: 'black' }}
-                      className=" rounded mt-3 col-md-12"
-                    >
-                      <div className="text-center pt-2">
-                        <span className="text-white fw-bold  ">
-                          Machine Running
-                        </span>
-                      </div>
-                      <div className=" p-2 ">
-                        <div className=" d-flex flex-column bg-success">
-                          <div className="row text-white text-start p-2">
-                            <span>
-                              Part No :{' '}
-                              {currentDataMachine && currentDataMachine.part_no}{' '}
-                            </span>
-                            <span>
-                              Part name :{' '}
-                              {currentDataMachine &&
-                                currentDataMachine.part_name}{' '}
-                            </span>
-                            <span>
-                              Target QTY :{' '}
-                              {currentDataMachine && currentDataMachine.qty}{' '}
-                            </span>
-                            <span>
-                              CT Time :{' '}
-                              {currentDataMachine && currentDataMachine.ct}{' '}
-                            </span>
-                          </div>
+            </div>
+            <div className="col-md-12 ">
+              <div className="row g-3 p-0">
+                <div className="col-md-12   p-1 ">
+                  <div
+                    style={{ background: 'black' }}
+                    className=" rounded mt-3 col-md-12"
+                  >
+                    <div className="text-center pt-2">
+                      <span className="text-white fw-bold  ">
+                        Machine Running
+                      </span>
+                    </div>
+                    <div className=" p-2 ">
+                      <div className=" d-flex flex-column bg-success">
+                        <div className="row text-white text-start p-2">
+                          <span>
+                            Part No :{' '}
+                            {currentDataMachine && currentDataMachine.part_no}{' '}
+                          </span>
+                          <span>
+                            Part name :{' '}
+                            {currentDataMachine && currentDataMachine.part_name}{' '}
+                          </span>
+                          <span>
+                            Target QTY :{' '}
+                            {currentDataMachine && currentDataMachine.qty}{' '}
+                          </span>
+                          <span>
+                            CT Time :{' '}
+                            {currentDataMachine && currentDataMachine.ct / 1000}{' '}
+                            Seccond
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -701,192 +639,190 @@ setFormDandori((prevData) => {
             </div>
           </div>
         </div>
+      </div>
 
-        <div
-          className="modal fade"
-          id="modalButtonAndon"
-          data-bs-backdrop="static"
-          data-bs-keyboard="false"
-          tabIndex="-1"
-          aria-labelledby="staticBackdropLabel"
-          aria-hidden="true"
-        >
-          <div className="modal-dialog modal-xl">
-            <div className="modal-content  ">
-              <div className="modal-header">
-                <h1 className="modal-title fs-5" id="modalButtonAndonLabel">
-                  {currentDataMachine.status_yellow
-                    ? 'Problem Non Machine'
-                    : currentDataMachine.status_red && 'Problem Machine'}
-                </h1>
-                <button
-                id='closeButton'
-                  type="button"
-                  disabled={currentDataMachine.category !== null}
-                  onClick={handleCloseModalAndon}
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className="row">
-                  {/*  */}
-                  <div
-                    className={` ${
-                      !currentDataMachine.status_yellow && 'd-none'
-                    } col-md-12 rounded  p-1   `}
-                  >
-                    <div className=" col-md-12">
-                      <div className=" p-2 ">
-                        <div className=" d-flex flex-column ">
-                          <div className="row text-white p-0 g-2">
-                            <div className="col-6  ">
-                              <button
-                                disabled={currentDataMachine.category && currentDataMachine.category !== 'DNDP1'}
-                                onClick={() => handleButtonDandori()
-                                
-                                }
-                                className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
-                              >
-                                Dandori
-                              </button>
-                            </div>
+      <div
+        className="modal fade"
+        id="modalButtonAndon"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabIndex="-1"
+        aria-labelledby="staticBackdropLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-xl">
+          <div className="modal-content  ">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="modalButtonAndonLabel">
+                {currentDataMachine.status_yellow
+                  ? 'Problem Non Machine'
+                  : currentDataMachine.status_red && 'Problem Machine'}
+              </h1>
+              <button
+                id="closeButton"
+                type="button"
+             /*    disabled={currentDataMachine.category !== null} */
+                onClick={handleCloseModalAndon}
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <div className="row">
+                {/*  */}
+                <div
+                  className={` ${
+                    !currentDataMachine.status_yellow && 'd-none'
+                  } col-md-12 rounded  p-1   `}
+                >
+                  <div className=" col-md-12">
+                    <div className=" p-2 ">
+                      <div className=" d-flex flex-column ">
+                        <div className="row text-white p-0 g-2">
+                          <div className="col-6  ">
+                            <button
+                              disabled={
+                                currentDataMachine.category &&
+                                currentDataMachine.category !== 'DNDP1'
+                              }
+                              onClick={() => handleButtonDandori()}
+                              className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
+                            >
+                              Dandori
+                            </button>
+                          </div>
 
-                            {dataSubCategoryPnm.map((item, index) => (
-                              <div
-                                key={index}
-                                className={` col-6  ${
-                                  formDandori.status === true && 'd-none'
-                                } `}
-                              >
-                                <button
-                                  disabled={
-                                    currentDataMachine.length === 0 ||
-                                    currentDataMachine === null ||
-                                    (currentDataMachine.category &&
-                                      currentDataMachine.category !== item.code)
-                                  }
-                                  onClick={() => handleProblemNonMachine(item)}
-                                  className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
-                                >
-                                  {item.name}
-                                </button>
-                              </div>
-                            ))}
-
+                          {dataSubCategoryPnm.map((item, index) => (
                             <div
-                              className={` mt-4 col-12 ${
-                                currentDataMachine.category !== "DNDP1" && 'd-none'
+                              key={index}
+                              className={` col-6  ${
+                                formDandori.status === true && 'd-none'
                               } `}
                             >
-                              <form
-                                onSubmit={handleFormDandori}
-                                className="text-dark"
-                                style={{ fontSize: '14px' }}
+                              <button
+                                disabled={
+                                  currentDataMachine.length === 0 ||
+                                  currentDataMachine === null ||
+                                  (currentDataMachine.category &&
+                                    currentDataMachine.category !== item.code)
+                                }
+                                onClick={() => handleProblemNonMachine(item)}
+                                className=" col-md-12 btn  btn-warning text-white p-3 align-items-center justify-content-center d-flex"
                               >
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    Machine Code
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="text"
-                                      value={
-                                        process.env
-                                          .REACT_APP_DEFAULT_MACHINE_CODE
-                                      }
-                                      required
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
+                                {item.name}
+                              </button>
+                            </div>
+                          ))}
+
+                          <div
+                            className={` mt-4 col-12 ${
+                              currentDataMachine.category !== 'DNDP1' &&
+                              'd-none'
+                            } `}
+                          >
+                            <form
+                              onSubmit={handleFormDandori}
+                              className="text-dark"
+                              style={{ fontSize: '14px' }}
+                            >
+                              <div className="row mb-3 justify-content-center">
+                                <label className="col-sm-3 col-form-label">
+                                  Machine Code
+                                </label>
+                                <div className="col-sm-6">
+                                  <input
+                                    type="text"
+                                    value={
+                                      process.env.REACT_APP_DEFAULT_MACHINE_CODE
+                                    }
+                                    required
+                                    className="form-control form-control-sm"
+                                  />
                                 </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    Machine Name
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      value={
-                                        process.env
-                                          .REACT_APP_DEFAULT_MACHINE_NAME
-                                      }
-                                      type="text"
-                                      required
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
+                              </div>
+                              <div className="row mb-3 justify-content-center">
+                                <label className="col-sm-3 col-form-label">
+                                  Machine Name
+                                </label>
+                                <div className="col-sm-6">
+                                  <input
+                                    value={
+                                      process.env.REACT_APP_DEFAULT_MACHINE_NAME
+                                    }
+                                    type="text"
+                                    required
+                                    className="form-control form-control-sm"
+                                  />
                                 </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    Part No
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <Typeahead
-                                      options={getDataProduct}
-                                      labelKey={'part_no'}
-                                      id={(e) =>
-                                        e[0] != null && e[0].id != null
-                                          ? e[0].id
-                                          : null
-                                      }
-                                      onChange={(e) =>
-                                        setFormDandori((prevData) => {
-                                          return {
-                                            ...prevData,
-                                            part_no:
-                                              e[0] != null &&
-                                              e[0].part_no != null
-                                                ? e[0].part_no
-                                                : '',
-                                            part_name:
-                                              e[0] != null &&
-                                              e[0].part_name != null
-                                                ? e[0].part_name
-                                                : '',
-                                            ct:
-                                              e[0] != null && e[0].ct != null
-                                                ? e[0].ct
-                                                : '',
-                                          };
-                                        })
-                                      }
-                                    />
-                                  </div>
+                              </div>
+                              <div className="row mb-3 justify-content-center">
+                                <label className="col-sm-3 col-form-label">
+                                  Part No
+                                </label>
+                                <div className="col-sm-6">
+                                  <Typeahead
+                                    options={getDataProduct}
+                                    labelKey={'part_no'}
+                                    id={(e) =>
+                                      e[0] != null && e[0].id != null
+                                        ? e[0].id
+                                        : null
+                                    }
+                                    onChange={(e) =>
+                                      setFormDandori((prevData) => {
+                                        return {
+                                          ...prevData,
+                                          part_no:
+                                            e[0] != null && e[0].part_no != null
+                                              ? e[0].part_no
+                                              : '',
+                                          part_name:
+                                            e[0] != null &&
+                                            e[0].part_name != null
+                                              ? e[0].part_name
+                                              : '',
+                                          ct:
+                                            e[0] != null && e[0].ct != null
+                                              ? e[0].ct
+                                              : '',
+                                        };
+                                      })
+                                    }
+                                  />
                                 </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    Part Name
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="text"
-                                      value={
-                                        formDandori.part_name
-                                          ? formDandori.part_name
-                                          : ''
-                                      }
-                                      disabled
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
+                              </div>
+                              <div className="row mb-3 justify-content-center">
+                                <label className="col-sm-3 col-form-label">
+                                  Part Name
+                                </label>
+                                <div className="col-sm-6">
+                                  <input
+                                    type="text"
+                                    value={
+                                      formDandori.part_name
+                                        ? formDandori.part_name
+                                        : ''
+                                    }
+                                    disabled
+                                    className="form-control form-control-sm"
+                                  />
                                 </div>
-                                <div className="row mb-3 justify-content-center">
-                                  <label className="col-sm-3 col-form-label">
-                                    CT (Seccond)
-                                  </label>
-                                  <div className="col-sm-6">
-                                    <input
-                                      type="text"
-                                      value={
-                                        formDandori.ct ? formDandori.ct : ''
-                                      }
-                                      disabled
-                                      className="form-control form-control-sm"
-                                    />
-                                  </div>
+                              </div>
+                              <div className="row mb-3 justify-content-center">
+                                <label className="col-sm-3 col-form-label">
+                                  CT (Seccond)
+                                </label>
+                                <div className="col-sm-6">
+                                  <input
+                                    type="text"
+                                    value={formDandori.ct ? formDandori.ct : ''}
+                                    disabled
+                                    className="form-control form-control-sm"
+                                  />
                                 </div>
-                            {/*     <div className="row mb-3 justify-content-center">
+                              </div>
+                              {/*     <div className="row mb-3 justify-content-center">
                                   <label className="col-sm-3 col-form-label">
                                     {' '}
                                     QTY
@@ -911,59 +847,62 @@ setFormDandori((prevData) => {
                                   </div>
                                 </div> */}
 
-                                <div className="text-center">
-                                  <button
-                                    type="submit"
-                                    className="btn btn-sm btn-success text-white"
-                                  >
-                                    Submit
-                                  </button>
-                                </div>
-                              </form>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    className={` ${
-                      !currentDataMachine.status_red && 'd-none'
-                    } col-md-12 rounded  p-1   `}
-                  >
-                    <div className=" col-md-12">
-                      <div className=" p-2 ">
-                        <div className=" d-flex flex-column ">
-                          <div className="row text-white p-0 g-2">
-                            {dataSubCategoryPm.map((item, index) => (
-                              <div
-                                key={index}
-                                className={` col-6  ${
-                                  currentDataMachine.category === "DNDP1" && 'd-none'
-                                } `}
-                              >
+                              <div className="text-center">
                                 <button
-                                  disabled={
-                                    currentDataMachine.length === 0 ||
-                                    currentDataMachine === null ||
-                                    (currentDataMachine.category &&
-                                      currentDataMachine.category !== item.code)
-                                  }
-                                  onClick={() => handleProblemMachine(item)}
-                                  className=" col-md-12 btn  btn-danger text-white p-3 align-items-center justify-content-center d-flex"
+                                  type="submit"
+                                  className="btn btn-sm btn-success text-white"
                                 >
-                                  {item.name}
+                                  Submit
                                 </button>
                               </div>
-                            ))}
+                            </form>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div       className={` ${
-                      !currentDataMachine.defect  && 'd-none'
-                    } col-md-12 rounded  p-2   `}>
+                </div>
+                <div
+                  className={` ${
+                    !currentDataMachine.status_red && 'd-none'
+                  } col-md-12 rounded  p-1   `}
+                >
+                  <div className=" col-md-12">
+                    <div className=" p-2 ">
+                      <div className=" d-flex flex-column ">
+                        <div className="row text-white p-0 g-2">
+                          {dataSubCategoryPm.map((item, index) => (
+                            <div
+                              key={index}
+                              className={` col-6  ${
+                                currentDataMachine.category === 'DNDP1' &&
+                                'd-none'
+                              } `}
+                            >
+                              <button
+                                disabled={
+                                  currentDataMachine.length === 0 ||
+                                  currentDataMachine === null ||
+                                  (currentDataMachine.category &&
+                                    currentDataMachine.category !== item.code)
+                                }
+                                onClick={() => handleProblemMachine(item)}
+                                className=" col-md-12 btn  btn-danger text-white p-3 align-items-center justify-content-center d-flex"
+                              >
+                                {item.name}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={` ${
+                    !currentDataMachine.defect && 'd-none'
+                  } col-md-12 rounded  p-2   `}
+                >
                   <div className="row">
                     <div className="col-6  p-0 ">
                       <div className="row g-3 m-0 p-0  ">
@@ -1107,49 +1046,47 @@ setFormDandori((prevData) => {
                     </div>
                   </div>
                 </div>
-                  {/*  */}
-                </div>
+                {/*  */}
               </div>
             </div>
           </div>
         </div>
-        {/* end modal button andon */}
-
-        {/* start modal Defect */}
-        <div
-          className="modal fade"
-          id="modalDefect"
-          data-bs-backdrop="static"
-          data-bs-keyboard="false"
-          tabIndex="-1"
-          aria-labelledby="modalDefectLabel"
-          aria-hidden="true"
-        >
-          <div className="modal-dialog modal-xl modal-dialog-scrollable">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h1 className="modal-title fs-5" id="modalDefectLabel">
-                  Product Defect | Machine :{' '}
-                  {process.env.REACT_APP_DEFAULT_MACHINE_CODE}{' '}
-                </h1>
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div className="modal-body">
-               
-              </div>
-              <div className="modal-footer">
-                {/*   <button type="button" className="btn btn-success">Save</button> */}
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* end modal Defect */}
       </div>
+      {/* end modal button andon */}
+
+      {/* start modal Defect */}
+      <div
+        className="modal fade"
+        id="modalDefect"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+        tabIndex="-1"
+        aria-labelledby="modalDefectLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-xl modal-dialog-scrollable">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="modalDefectLabel">
+                Product Defect | Machine :{' '}
+                {process.env.REACT_APP_DEFAULT_MACHINE_CODE}{' '}
+              </h1>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body"></div>
+            <div className="modal-footer">
+              {/*   <button type="button" className="btn btn-success">Save</button> */}
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* end modal Defect */}
+    </div>
   );
 };
 
