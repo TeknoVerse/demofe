@@ -95,7 +95,7 @@ const OeeReportDisplay = () => {
         clearInterval(data);
       });
     };
-  }, []);
+  }, [avaibility,oee,performance,quality]);
 
   const getDataMachine = async () => {
     try {
@@ -139,10 +139,19 @@ const OeeReportDisplay = () => {
     }
   };
 
-
+let newFromOee = []
   const realTimeOee = async (data) => {
-    if(data  ){
-    console.log(data)
+      if(
+        !newFromOee.some(
+          (dataNewTaks) =>
+          dataNewTaks.oee === avaibility &&
+          dataNewTaks.avaibility === avaibility &&
+          dataNewTaks.performance === performance &&
+          dataNewTaks.quality === quality
+        )
+      ){
+        newFromOee.push(data)
+        
       
     const response = await axios.post(getUrlTworkOee, {
       machine_no : data.machine_no,
@@ -151,28 +160,15 @@ const OeeReportDisplay = () => {
     })
     const curretnData = response.data
 
-    console.log(curretnData)
-    if(curretnData){
-
-
-    if(curretnData.oee !== oee){
       setOee(curretnData.oee)
-    }
-    if(curretnData.avaibility !== avaibility){
       setAvaibility(curretnData.avaibility)
       
-    }
-    if(curretnData.performance !== performance){
       setPerformance(curretnData.performance)
       
-    }
-    if(curretnData.quality !== quality){
       setQuality(curretnData.quality)
-      
-    }
-  }
+     
+      }
 
-  }
   }
 
 
