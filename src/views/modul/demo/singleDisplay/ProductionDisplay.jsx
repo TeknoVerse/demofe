@@ -107,7 +107,7 @@ const ProductionDisplay = () => {
       className="d-flex align-items-center justify-content-center container-fluid"
       style={{ height: '100vh' }}
     >
-      <div className="col-3">
+      <div className='px-3'>
         <div
           style={{
             background: 'black',
@@ -124,7 +124,7 @@ const ProductionDisplay = () => {
           
 
           <div className="col-12 mb-3">
-            <div style={{minHeight: '16rem'}} className="row fs-5">
+            <div style={{minHeight: '60vh'}} className="row fs-5">
               <div className="col-12  d-flex">
                 <div className="col-9">Part Code</div>
                 <div className="col-3 d-flex "> <span className='ms-auto'> {currentDataMachine.part_no} </span> </div>

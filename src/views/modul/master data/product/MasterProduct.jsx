@@ -60,7 +60,7 @@ const MasterProduct = () => {
         await axios.patch(`${getUrlProduct}?id=${dataFormProduct.id}`, {
           part_name : dataFormProduct.part_name,
           part_no : dataFormProduct.part_no,
-          ct : dataFormProduct.ct,
+          ct : dataFormProduct.ct * 1000,
         })
         setDataFromProduct([])
         setEditProduct(false)
@@ -68,7 +68,7 @@ const MasterProduct = () => {
         await axios.post(getUrlProduct, {
           part_name : dataFormProduct.part_name,
           part_no : dataFormProduct.part_no,
-          ct : dataFormProduct.ct,
+          ct : dataFormProduct.ct * 1000,
         })
         setDataFromProduct([])
       }
@@ -239,7 +239,7 @@ const MasterProduct = () => {
                     <th >{index +1} </th>
                     <td>{item.part_name}</td>
                     <td>{item.part_no}</td>
-                    <td>{item.ct}</td>
+                    <td>{(item.ct/1000)} </td>
                     <td style={{ width: '150px' }}>
                       <span onClick={() => handleDeleteProduct(item.id)} className="btn btn-danger text-white">
                         
