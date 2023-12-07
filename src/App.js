@@ -4,8 +4,9 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 //import "bootstrap/dist/css/bootstrap.min.css"
 import "bootstrap/dist/js/bootstrap.bundle.js"
 
-import './scss/style.scss'
 import './scss/Mycss.scss'
+import './scss/style.scss'
+import 'jsbarcode/dist/JsBarcode.all.js'
 import ProductionDisplay from './views/modul/demo/singleDisplay/ProductionDisplay'
 import DataProductionDisplay from './views/modul/demo/singleDisplay/DataProductionDisplay'
 import { DataProvider } from './views/modul/DataContext'

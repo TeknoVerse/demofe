@@ -25,7 +25,7 @@ class PrintContent extends Component {
     const newData = [];
     for (let index = 0; index < currentAmount; index++) {
       newData.push(
-        <div className="col-6">
+          <div className="col-6">
           <div className="p-2 print-content  border border-3 ">
             <div className="col-12 d-flex  justify-content-between">
               <div className="text-start " ref={kanbanRef}>
@@ -537,6 +537,7 @@ const MasterKanban = () => {
                 content={() => componentPrintRef.current}
                 documentTitle="Kanban Warehouse"
                 removeAfterPrint
+                
                 trigger={() => {
                   return (
                     <button
