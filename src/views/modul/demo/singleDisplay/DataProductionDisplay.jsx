@@ -269,16 +269,22 @@ const DataProductionDisplay = () => {
    
   };
 
+  const [buttonDefect,setButtonDefect] = useState(false)
   return (
     <div
-      className="d-flex align-items-center justify-content-center container-fluid"
+      className="d-flex flex-column align-items-center justify-content-center container-fluid"
       style={{ height: '100vh' }}
     >
       <div className="col-md-7 ">
         <div className="row g-3 p-0">
-          <div className={`${
+          {/* ${
               currentDataMachine.length === 0 ||
               currentDataMachine.defect === false
+                ? 'd-none'
+                : ''
+            }  */}
+          <div className={`${
+              buttonDefect === false
                 ? 'd-none'
                 : ''
             } col-md-12   p-1 `}>
@@ -415,6 +421,10 @@ const DataProductionDisplay = () => {
               </div>
             </div>
           </div>
+          <div>
+        <button onClick={() =>setButtonDefect(true)} className='btn me-3 btn-dark'>Open Defect</button>
+        <button onClick={() =>setButtonDefect(false)} className='btn btn-danger'>Close Defect</button>
+      </div>
           <div
             className={`${
               currentDataMachine.length === 0 ||
@@ -709,6 +719,7 @@ const DataProductionDisplay = () => {
           </div>
         </div>
       </div>
+   
     </div>
   );
 };
