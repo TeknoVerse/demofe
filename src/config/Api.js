@@ -17,3 +17,5 @@ export const getUrlSubCategory = hostanme+'/sub-category';
 export const getUrlShift = hostanme+'/shift';
 export const getUrlTmastDefect = hostanme+'/defect';
 export const getUrlTtransDefect = hostanme+'/ttrans_defect';
+export const getUrlTtransSerialCodeQrKanban = hostanme+'/ttrans_serial_code_qr_kanban';
+export const getUrlCreateToken = hostanme+'/create_token';

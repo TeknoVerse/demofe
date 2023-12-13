@@ -9,67 +9,76 @@ import {
 } from 'src/config/GetDataApi';
 import { cilCheck, cilFilter, cilPencil, cilTrash } from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
-import { getUrlKanban } from 'src/config/Api';
+import { getUrlCreateToken, getUrlKanban, getUrlTtransSerialCodeQrKanban } from 'src/config/Api';
 import ReactToPrint from 'react-to-print';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
 class PrintContent extends Component {
   render() {
-    const { kanbanById, qrValue, qrCodeRef, kanbanRef, amount } = this.props;
+    const { kanbanById, qrValue, qrCodeRef, kanbanRef, amount, token } =
+      this.props;
 
-    let currentAmount = 1;
-    if (amount) {
+    let currentAmount = 0;
+    if (amount && token) {
       currentAmount = amount;
-    }
-    const newData = [];
-    for (let index = 0; index < currentAmount; index++) {
-      newData.push(
-          <div className="col-6">
-          <div className="p-2 print-content  border border-3 ">
-            <div className="col-12 d-flex  justify-content-between">
-              <div className="text-start " ref={kanbanRef}>
-                <ul className="text-decoration-none">
-                  <li>Part No : {kanbanById.part_code} </li>
-                  <li>Part Name : {kanbanById.part_name} </li>
-                  <li>Qty : {kanbanById.qty} </li>
-                  <li>From : {kanbanById.from} </li>
-                  <li>To : {kanbanById.to} </li>
-                </ul>
-              </div>
-              <div
-                className="border border-dark border-5  col-6 "
-                style={{
-                  height: '150px',
-                  width: '150px',
-                  margin: '0px',
-                  padding: '10px',
-                }}
-                ref={qrCodeRef}
-              >
-                {qrValue && (
-                  <QRCodeSVG
-                    value={qrValue}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      padding: '0px',
-                      margin: '0px',
-                    }}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>,
+
+      const newData = [];
+
+      for (let index = 1; index <= currentAmount; index++) {
+     const serialCode = `${token}|${index}`
+   
+  
+              newData.push(
+                <div className="col-6">
+                  <div className="p-2 print-content  border border-3 ">
+                    <div className="col-12 d-flex flex-wrap  justify-content-between">
+                      <div className="text-start  " ref={kanbanRef}>
+                        <ul className="text-decoration-none ">
+                          <li>Part No : {kanbanById.part_code} </li>
+                          <li>Part Name : {kanbanById.part_name} </li>
+                          <li>Qty : {kanbanById.qty} </li>
+                          <li>From : {kanbanById.from} </li>
+                          <li>To : {kanbanById.to} </li>
+                          <li className='d-none'><span className='text-break'>Serial Code : {serialCode}</span> </li>
+                        </ul>
+                      </div>
+                      <div
+                        className="border border-dark border-5  col-6 "
+                        style={{
+                          height: '150px',
+                          width: '150px',
+                          margin: '0px',
+                          padding: '10px',
+                        }}
+                        ref={qrCodeRef}
+                      >
+                        {qrValue && (
+                          <QRCodeSVG
+                            value={{qrValue,serial_code : serialCode}}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              padding: '0px',
+                              margin: '0px',
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            
+     
+      }
+
+      return (
+        <div className="contianer-fluid p-0 m-0">
+          <div className="row g-2 p-1">{newData}</div>
+        </div>
       );
     }
-
-    return (
-      <div className="contianer-fluid p-0 m-0">
-        <div className="row g-2 p-1">{newData}</div>
-      </div>
-    );
   }
 }
 
@@ -84,8 +93,8 @@ const MasterKanban = () => {
   const [dataQrCode, setDataQrCode] = useState([]);
   const [profuctFiltered, setProductFiltered] = useState([]);
 
-  
   const [search, setSearch] = useState('');
+  const [post, setPost] = useState('');
 
   const refPartCode = useRef(null);
 
@@ -153,21 +162,72 @@ const MasterKanban = () => {
   };
 
   const [kanbanById, setKanbanById] = useState([]);
+  const [kanbanToken, setKanbanToken] = useState();
   const handlePreviewKanban = (item) => {
     setQRValue(
       `${item.part_name}|${item.part_code}|${item.qty}|${item.from}|${item.to}`,
     );
+    new Promise(async(resolve, reject) => {
+      try {
+        const tokenKanban = await axios.post(getUrlCreateToken, {
+          item
+        });
+    setKanbanToken(tokenKanban.data)
+
+      } catch (error) {
+        reject(error)
+      }
+   
+  })
+
     setKanbanById(item);
   };
 
   const handleClosePreviewKanban = () => {
     setQRValue([]);
     setKanbanById([]);
+    seAmountPrint(0);
+    setKanbanToken(null)
+    setPost(false);
   };
-
 
   const componentPrintRef = useRef();
 
+  const setTimeToPrintQr = async (e) => {
+    const timeStamp = Math.floor(Date.now() / 1000);
+    return console.log(timeStamp);
+  };
+
+  const handlePrintKanban = () => {
+    const printButton = document.getElementById('buttonPrint');
+    if (printButton) {
+      printButton.click();
+    }
+  };
+
+  const handleAfterPrint = async () => {
+    try {
+      
+    if (amountPrint && kanbanById && kanbanToken) {
+  
+      
+
+      for (let index = 1; index <= amountPrint; index++) {
+            const serialCode = `${kanbanToken}|${index}`
+            await axios.post(getUrlTtransSerialCodeQrKanban, {
+              data_kanban: kanbanById,
+              token : serialCode,
+            });
+      
+      }
+
+    }
+  } catch (error) {
+   console.log(error)   
+  }finally{
+    seAmountPrint(0);
+  }
+  };
 
   return (
     <div className="container-fluid body-kanban" style={{}}>
@@ -464,7 +524,8 @@ const MasterKanban = () => {
 
                     <td style={{ width: '150px' }}>
                       <span
-                         onClick={() => handleDeleteSloc(item.id)}  className="btn btn-danger text-white"
+                        onClick={() => handleDeleteSloc(item.id)}
+                        className="btn btn-danger text-white"
                       >
                         <CIcon icon={cilTrash} />
                       </span>
@@ -507,7 +568,9 @@ const MasterKanban = () => {
                   <PrintContent
                     ref={componentPrintRef}
                     kanbanById={kanbanById}
+                    token= {kanbanToken}
                     qrValue={qrValue}
+                    post={post}
                     amount={amountPrint}
                   />
                 </div>
@@ -521,12 +584,25 @@ const MasterKanban = () => {
               </div>
             </div>
 
-            <div className="modal-footer">
-              <div className="row mb-3">
+            <div className="row modal-footer">
+              <div className="row mb-3 col-4">
+                <label className="col-sm-4 col-form-label">
+                  Can Scan in (Minutes){' '}
+                </label>
+                <div className="col-sm-8">
+                  <input
+                    type="number"
+                    onChange={(e) => setTimeToPrintQr(e.target.value)}
+                    className="form-control"
+                  />
+                </div>
+              </div>
+              <div className="row mb-3 col-4">
                 <label className="col-sm-4 col-form-label">Amount</label>
                 <div className="col-sm-8">
                   <input
                     type="number"
+                    value={amountPrint}
                     onChange={(e) => seAmountPrint(e.target.value)}
                     className="form-control"
                   />
@@ -536,12 +612,13 @@ const MasterKanban = () => {
               <ReactToPrint
                 content={() => componentPrintRef.current}
                 documentTitle="Kanban Warehouse"
+                onAfterPrint={handleAfterPrint}
                 removeAfterPrint
-                
                 trigger={() => {
                   return (
                     <button
-                      className="btn btn-primary"
+                      id="buttonPrint"
+                      className=" d-none btn btn-primary col-4"
                     >
                       Print{' '}
                     </button>
@@ -549,8 +626,15 @@ const MasterKanban = () => {
                 }}
               />
               <button
+                onClick={handlePrintKanban}
+                className="btn btn-primary col-4"
+              >
+                Print{' '}
+              </button>
+
+              <button
                 type="button"
-                className="btn btn-danger text-white"
+                className="btn btn-danger text-white col-4"
                 data-bs-dismiss="modal"
                 onClick={handleClosePreviewKanban}
               >
@@ -568,6 +652,8 @@ export default MasterKanban;
 PrintContent.propTypes = {
   kanbanById: PropTypes.array,
   qrValue: PropTypes.array,
+  token : PropTypes.string,
+  post: PropTypes.bool,
   qrCodeRef: PropTypes.object,
   kanbanRef: PropTypes.object,
   amount: PropTypes.number,
